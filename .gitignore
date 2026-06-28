@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.claude/
+.vscode/
+.idea/
+*.log
+outputs/
+inputs/
+.env
+.DS_Store
+Thumbs.db
+*.bat

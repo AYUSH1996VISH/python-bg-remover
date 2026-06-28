@@ -1231,7 +1231,27 @@ def create_api_app():
         return list(results)
 
     return app
+    # ─────────────────────────────────────────────────────────
+    # Serve frontend (for Hugging Face Spaces deployment)
+    # ─────────────────────────────────────────────────────────
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse, RedirectResponse
+    from pathlib import Path as _Path
 
+    _frontend_dir = _Path(__file__).parent / "frontend"
+    if _frontend_dir.exists() and (_frontend_dir / "index.html").exists():
+        app.mount("/frontend", StaticFiles(directory=str(_frontend_dir)), name="frontend")
+
+        @app.get("/ui", include_in_schema=False)
+        async def serve_ui():
+            return FileResponse(str(_frontend_dir / "index.html"))
+
+        # Optional: redirect root to UI (so visiting the Space URL opens the app)
+        @app.get("/app", include_in_schema=False)
+        async def app_redirect():
+            return RedirectResponse(url="/ui")
+
+        logger.info("Frontend mounted at /ui and /frontend/")
 
 try:
     app = create_api_app()
