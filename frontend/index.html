@@ -3,427 +3,682 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BG Remover Pro</title>
-<meta name="description" content="Studio-grade AI background removal — upload, process, download.">
+<title>BG Remover Pro — Studio-Grade AI Background Removal</title>
+<meta name="description" content="Studio-grade AI background removal — upload, process, download in seconds.">
 <style>
-/* ── reset ─────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────
+   RESET + ROOT
+   ───────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #0f1117;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  background: #0a0c14;
   color: #e2e8f0;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
 }
-input, select, button { font-family: inherit; font-size: inherit; }
-img { display: block; }
+input, select, button, textarea { font-family: inherit; font-size: inherit; }
+img { display: block; max-width: 100%; }
+button { cursor: pointer; }
 
 :root {
-  --accent:  #6366f1;
-  --accentH: #818cf8;
-  --success: #22c55e;
-  --danger:  #ef4444;
-  --surf:    #1e2130;
-  --surf2:   #252a3a;
-  --border:  #2d3348;
-  --dim:     #94a3b8;
-  --r:       12px;
+  --bg:         #0a0c14;
+  --surf:       #141826;
+  --surf2:      #1c2030;
+  --surf3:      #252a3d;
+  --border:     #2a3048;
+  --borderH:    #3a4263;
+
+  --accent:     #6366f1;
+  --accentH:    #818cf8;
+  --accent2:    #a855f7;
+
+  --success:    #22c55e;
+  --successH:   #4ade80;
+  --warn:       #f59e0b;
+  --danger:     #ef4444;
+  --dangerH:    #fca5a5;
+
+  --text:       #e2e8f0;
+  --textDim:    #94a3b8;
+  --textBright: #f1f5f9;
+
+  --r:          14px;
+  --rs:         10px;
+
+  --shadow-md:  0 4px 16px rgba(0,0,0,.4);
+  --shadow-lg:  0 12px 32px rgba(0,0,0,.6);
+
+  --grad-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
 }
 
-/* ── layout ─────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────
+   LAYOUT
+   ───────────────────────────────────────────────────────────────────── */
 .wrap {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 20px 16px 80px;
+  padding: 24px 20px 80px;
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 20px;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
   align-items: start;
 }
-@media (max-width: 840px) { .wrap { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: 1fr; padding: 16px 12px 60px; gap: 16px; }
+  .panel { position: static !important; }
+}
 
-/* ── header ─────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────
+   HEADER
+   ───────────────────────────────────────────────────────────────────── */
 header {
-  grid-column: 1/-1;
-  display: flex; align-items: center; gap: 14px;
-  padding-bottom: 14px;
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--border);
 }
-.logo { font-size: 1.6rem; }
-header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
-header p  { font-size: .8rem; color: var(--dim); margin-top: 2px; }
+.logo-wrap {
+  width: 44px; height: 44px;
+  background: var(--grad-accent);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, .35);
+}
+.head-text { flex: 1; min-width: 0; }
+header h1 {
+  font-size: 1.35rem; font-weight: 700;
+  letter-spacing: -.4px; color: var(--textBright);
+}
+header p { font-size: .8rem; color: var(--textDim); margin-top: 2px; }
 #badge {
-  margin-left: auto;
-  padding: 4px 12px; border-radius: 20px;
+  padding: 6px 14px; border-radius: 20px;
   font-size: .72rem; font-weight: 600;
-  background: rgba(99,102,241,.15); color: var(--accentH);
+  background: rgba(99,102,241,.12); color: var(--accentH);
   border: 1px solid rgba(99,102,241,.3);
   white-space: nowrap;
-  transition: background .3s, color .3s, border-color .3s;
+  display: flex; align-items: center; gap: 6px;
+  transition: all .25s;
 }
-#badge.ok  { background: rgba(34,197,94,.12);  color: #4ade80; border-color: rgba(34,197,94,.3); }
-#badge.err { background: rgba(239,68,68,.1);   color: #fca5a5; border-color: rgba(239,68,68,.3); }
+#badge::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulse 2s infinite;
+}
+#badge.ok  { background: rgba(34,197,94,.1);  color: var(--successH); border-color: rgba(34,197,94,.3); }
+#badge.err { background: rgba(239,68,68,.1);  color: var(--dangerH);  border-color: rgba(239,68,68,.3); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-/* ── settings panel ─────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────
+   SETTINGS PANEL
+   ───────────────────────────────────────────────────────────────────── */
 .panel {
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 20px;
-  display: flex; flex-direction: column; gap: 14px;
-  position: sticky; top: 16px;
+  padding: 22px;
+  display: flex; flex-direction: column; gap: 16px;
+  position: sticky; top: 20px;
+  box-shadow: var(--shadow-md);
 }
 .section-title {
   font-size: .68rem; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: var(--dim);
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--textDim);
+  padding-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
 }
-label { display: block; font-size: .8rem; color: var(--dim); margin-bottom: 5px; }
+.section-title::before {
+  content: ''; width: 3px; height: 12px;
+  background: var(--accent); border-radius: 2px;
+}
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: .78rem; color: var(--textDim);
+  font-weight: 500;
+}
+.field label small { font-size: .7rem; opacity: .7; font-weight: 400; }
+
 input[type=text], input[type=password], select {
   width: 100%;
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 8px; color: #e2e8f0;
-  padding: 8px 12px; outline: none;
-  transition: border-color .15s;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  color: var(--text);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color .15s, background .15s;
 }
-input:focus, select:focus { border-color: var(--accent); }
-select { cursor: pointer; }
-select option { background: #1a1e2e; }
+input[type=text]:hover, input[type=password]:hover, select:hover { border-color: var(--borderH); }
+input:focus, select:focus { border-color: var(--accent); background: var(--surf3); }
+select { cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+select option { background: #1a1e2e; padding: 8px; }
 
-/* toggles */
-.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.toggle-row .lbl { font-size: .82rem; color: #cbd5e1; }
-.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+/* TOGGLES */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 4px 0;
+}
+.toggle-row .toggle-lbl { display: flex; flex-direction: column; gap: 2px; }
+.toggle-row .lbl { font-size: .85rem; color: var(--text); font-weight: 500; }
+.toggle-row .sub { font-size: .7rem; color: var(--textDim); }
+.toggle {
+  position: relative; width: 42px; height: 24px;
+  flex-shrink: 0;
+}
 .toggle input { opacity: 0; width: 0; height: 0; }
 .knob {
   position: absolute; inset: 0;
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 11px; cursor: pointer;
-  transition: background .2s, border-color .2s;
+  background: var(--surf3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .25s, border-color .25s;
 }
 .knob::before {
   content: ''; position: absolute;
-  width: 16px; height: 16px; background: #94a3b8;
-  border-radius: 50%; top: 2px; left: 2px;
-  transition: transform .2s, background .2s;
+  width: 18px; height: 18px;
+  background: var(--textDim);
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: transform .25s, background .25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
 }
-.toggle input:checked ~ .knob { background: var(--accent); border-color: var(--accent); }
+.toggle input:checked ~ .knob {
+  background: var(--accent); border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+}
 .toggle input:checked ~ .knob::before { transform: translateX(18px); background: #fff; }
 
-/* color row */
-.color-row { display: flex; gap: 8px; align-items: center; }
+/* COLOR PICKER */
+.color-row {
+  display: flex; gap: 8px; align-items: center;
+  padding: 6px 10px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: var(--rs);
+}
 .color-swatch {
-  width: 36px; height: 36px; border-radius: 8px;
-  border: 1px solid var(--border); overflow: hidden;
-  flex-shrink: 0; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 2px solid var(--border); overflow: hidden;
+  flex-shrink: 0; cursor: pointer; position: relative;
 }
 .color-swatch input[type=color] {
   width: 200%; height: 200%; margin: -50% 0 0 -50%;
-  border: none; padding: 0; cursor: pointer;
+  border: none; padding: 0; cursor: pointer; background: none;
 }
-.color-row input[type=text] { flex: 1; }
+.color-row input[type=text] {
+  flex: 1; background: transparent; border: none;
+  padding: 4px 6px; font-family: ui-monospace, monospace;
+  font-size: .85rem;
+}
 
-/* process button */
+/* PROCESS BUTTON */
 #btnProcess {
-  width: 100%; background: var(--accent); color: #fff;
-  border: none; border-radius: 8px;
-  padding: 11px 16px; font-size: .9rem; font-weight: 600;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: background .15s, opacity .15s;
+  width: 100%;
+  background: var(--grad-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--rs);
+  padding: 13px 16px;
+  font-size: .9rem; font-weight: 600;
+  letter-spacing: .02em;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform .15s, box-shadow .15s, opacity .15s;
+  box-shadow: 0 4px 14px rgba(99,102,241,.4);
 }
-#btnProcess:hover:not(:disabled) { background: var(--accentH); }
-#btnProcess:disabled { opacity: .45; cursor: not-allowed; }
+#btnProcess:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99,102,241,.55);
+}
+#btnProcess:active:not(:disabled) { transform: translateY(0); }
+#btnProcess:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
 .spin {
   width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
-  border-radius: 50%; animation: spin .7s linear infinite; display: none;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
 }
 .loading .spin  { display: block; }
 .loading .btext { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── live progress block ─────────────────────────────────────────────── */
+/* LIVE PROGRESS */
 .live-prog {
   display: none;
-  flex-direction: column; gap: 8px;
+  flex-direction: column; gap: 10px;
+  padding-top: 4px;
 }
 .live-prog.show { display: flex; }
-
 .prog-bar-bg {
-  height: 6px; background: var(--surf2); border-radius: 3px; overflow: hidden;
+  height: 6px; background: var(--surf3); border-radius: 3px; overflow: hidden;
 }
-.prog-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width .25s; }
-
+.prog-bar {
+  height: 100%; background: var(--grad-accent);
+  border-radius: 3px; transition: width .3s;
+}
 .timer-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
 }
 .timer-cell {
   background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 7px 10px;
+  border-radius: var(--rs); padding: 8px 11px;
 }
-.timer-cell .tc-label { font-size: .65rem; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
-.timer-cell .tc-val   { font-size: 1rem; font-weight: 700; color: #c7d2fe; margin-top: 2px; }
-.timer-cell .tc-val.green { color: #4ade80; }
+.tc-label {
+  font-size: .65rem; color: var(--textDim);
+  text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
+}
+.tc-val {
+  font-size: 1rem; font-weight: 700;
+  color: var(--accentH); margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.tc-val.green { color: var(--successH); }
 
-/* ── main area ──────────────────────────────────────────────────────── */
-main { display: flex; flex-direction: column; gap: 20px; }
+/* ─────────────────────────────────────────────────────────────────────
+   MAIN AREA
+   ───────────────────────────────────────────────────────────────────── */
+main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
-/* drop zone */
+/* DROP ZONE */
 .drop {
-  background: var(--surf); border: 2px dashed var(--border);
+  background: var(--surf);
+  border: 2px dashed var(--border);
   border-radius: var(--r);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; min-height: 190px; cursor: pointer;
-  transition: border-color .15s, background .15s;
-  text-align: center; padding: 28px 20px;
+  gap: 10px; min-height: 220px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .2s;
+  text-align: center; padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
 }
-.drop.over { border-color: var(--accent); background: rgba(99,102,241,.06); }
-.drop.has  { border-style: solid; border-color: var(--accent); min-height: 110px; }
-.drop-icon { font-size: 2.2rem; }
-.drop h3   { font-size: .95rem; font-weight: 600; }
-.drop p    { font-size: .77rem; color: var(--dim); }
+.drop::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(99,102,241,.05) 0%, transparent 70%);
+  opacity: 0; transition: opacity .25s;
+  pointer-events: none;
+}
+.drop:hover::before, .drop.over::before { opacity: 1; }
+.drop.over {
+  border-color: var(--accent);
+  background: rgba(99,102,241,.04);
+  transform: scale(1.005);
+}
+.drop.has  {
+  border-style: solid;
+  border-color: rgba(99,102,241,.4);
+  min-height: 140px;
+}
+.drop-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+  transition: transform .3s;
+}
+.drop:hover .drop-icon { transform: translateY(-3px) scale(1.05); }
+.drop h3 {
+  font-size: 1rem; font-weight: 600;
+  color: var(--textBright);
+}
+.drop p { font-size: .78rem; color: var(--textDim); }
 #fileInput { display: none; }
 
-/* file chips */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; justify-content: center; margin-top: 6px; }
+/* FILE CHIPS */
+.chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  width: 100%; justify-content: center; margin-top: 8px;
+  max-width: 100%;
+}
 .chip {
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 4px 12px; font-size: .73rem;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 6px 5px 12px;
+  font-size: .73rem;
   display: flex; align-items: center; gap: 6px;
+  max-width: 100%;
+}
+.chip span {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 200px;
 }
 .chip button {
-  background: none; border: none; color: var(--dim);
-  cursor: pointer; font-size: .9rem; padding: 0 2px; line-height: 1;
+  background: var(--surf3); border: none;
+  color: var(--textDim);
+  font-size: .9rem; line-height: 1;
+  padding: 0; width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
 }
-.chip button:hover { color: var(--danger); }
+.chip button:hover { background: var(--danger); color: #fff; }
 
-/* ── result cards ───────────────────────────────────────────────────── */
-.results { display: flex; flex-direction: column; gap: 16px; }
+/* ─────────────────────────────────────────────────────────────────────
+   RESULT CARDS
+   ───────────────────────────────────────────────────────────────────── */
+.results { display: flex; flex-direction: column; gap: 18px; }
 
 .card {
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: var(--r); overflow: hidden;
-  animation: fadeUp .3s ease;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  animation: fadeUp .35s ease;
+  box-shadow: var(--shadow-md);
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: none; }
 }
 
 .card-head {
-  padding: 11px 16px;
-  display: flex; align-items: center; gap: 8px;
-  border-bottom: 1px solid var(--border); font-size: .8rem;
+  padding: 13px 18px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: .82rem;
+  background: linear-gradient(180deg, rgba(255,255,255,.02), transparent);
 }
-.card-head .fname { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-head .fname {
+  flex: 1; font-weight: 600; color: var(--textBright);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .tag {
-  padding: 2px 8px; border-radius: 10px; font-size: .68rem; font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 11px;
+  font-size: .68rem; font-weight: 700;
   background: rgba(99,102,241,.15); color: var(--accentH);
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
 }
-.tag.ok   { background: rgba(34,197,94,.12); color: #4ade80; }
-.tag.dim  { background: var(--surf2); color: var(--dim); }
+.tag.ok   { background: rgba(34,197,94,.12); color: var(--successH); }
+.tag.dim  { background: var(--surf3);        color: var(--textDim); }
 .tag.spin-tag { background: rgba(99,102,241,.12); color: var(--accentH); }
 .tag-spin {
   width: 10px; height: 10px;
-  border: 1.5px solid rgba(129,140,248,.3); border-top-color: var(--accentH);
+  border: 1.5px solid rgba(129,140,248,.3);
+  border-top-color: var(--accentH);
   border-radius: 50%; animation: spin .7s linear infinite;
 }
 
-/* pending card body */
+/* PENDING CARD */
 .pending-body {
   display: flex; align-items: center; justify-content: center;
-  gap: 20px; padding: 36px 24px; min-height: 140px;
+  gap: 22px; padding: 40px 24px; min-height: 150px;
 }
 .pend-spin {
-  width: 36px; height: 36px; flex-shrink: 0;
-  border: 3px solid var(--border); border-top-color: var(--accent);
+  width: 38px; height: 38px; flex-shrink: 0;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%; animation: spin .8s linear infinite;
 }
 .pend-info { display: flex; flex-direction: column; gap: 5px; }
-.pend-status { font-size: .88rem; color: #e2e8f0; }
-.pend-timer  { font-size: .78rem; color: var(--dim); }
-.pend-timer b { color: #c7d2fe; }
+.pend-status { font-size: .9rem; color: var(--text); font-weight: 500; }
+.pend-timer  { font-size: .78rem; color: var(--textDim); }
+.pend-timer b { color: var(--accentH); font-variant-numeric: tabular-nums; }
 
-/* ── comparison slider ──────────────────────────────────────────────── */
-/*
-  Layout:
-    .cmp-wrap (relative, checkerboard)
-      img.orig   — in-flow, sets the height
-      img.res    — absolute inset:0, clip-path clips LEFT side,
-                   revealing result on the RIGHT as pct increases
-      .cmp-line  — divider bar (absolute)
-      .cmp-handle — knob (absolute)
-      .cmp-target — full-area drag surface (absolute z=20)
+/* ─────────────────────────────────────────────────────────────────────
+   COMPARISON SLIDER (THE FIX!)
 
-  clip-path: inset(0 0 0 X%) hides the left X%, shows the right (100-X)%.
-  At pct=50:  inset(0 0 0 50%) → original on LEFT, result on RIGHT ✓
-  At pct=0:   inset(0 0 0 100%) → only original visible
-  At pct=100: inset(0 0 0 0%)   → only result visible
-*/
+   Layout strategy:
+   - .cmp-wrap has a FIXED height (set via JS once images load)
+   - Both images use position: absolute; inset: 0; object-fit: contain
+   - Original sits underneath (z=1)
+   - Result sits on top (z=2) with clip-path on the LEFT side
+   - clip-path: inset(0 RIGHT% 0 0) — clips from the LEFT,
+     revealing result LEFT of the divider
+   - Checkerboard background visible BEHIND result wherever it's transparent
+   ───────────────────────────────────────────────────────────────────── */
+.cmp-labels {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 16px;
+  font-size: .72rem; color: var(--textDim);
+  background: var(--surf2);
+  border-bottom: 1px solid var(--border);
+}
+.cmp-labels .ml { color: var(--accentH); font-weight: 600; font-size: .68rem; }
+
 .cmp-wrap {
   position: relative;
-  background:
-    repeating-conic-gradient(#1a1e2e 0% 25%, #252a3a 0% 50%)
-    0 0 / 22px 22px;
+  width: 100%;
+  background-color: #0a0c14;
+  background-image:
+    linear-gradient(45deg, #1c2030 25%, transparent 25%),
+    linear-gradient(-45deg, #1c2030 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1c2030 75%),
+    linear-gradient(-45deg, transparent 75%, #1c2030 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, 10px 0;
   overflow: hidden;
-  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
-.cmp-wrap img.orig {
-  width: 100%; max-height: 520px; object-fit: contain;
-}
-.cmp-wrap img.res {
+.cmp-wrap img {
   position: absolute; inset: 0;
-  width: 100%; max-height: 520px; object-fit: contain;
-  /* Start at 50%: show result on RIGHT half */
-  clip-path: inset(0 0 0 50%);
+  width: 100%; height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.cmp-wrap img.orig { z-index: 1; }
+.cmp-wrap img.res  {
+  z-index: 2;
+  /* default: show result on LEFT half */
+  clip-path: inset(0 50% 0 0);
 }
 .cmp-line {
   position: absolute; top: 0; bottom: 0; left: 50%;
-  width: 2px; background: rgba(255,255,255,.9);
+  width: 2px;
+  background: #fff;
   transform: translateX(-50%);
   pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.3), 0 0 8px rgba(0,0,0,.3);
 }
 .cmp-handle {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 40px; height: 40px; border-radius: 50%;
-  background: #fff; box-shadow: 0 2px 14px rgba(0,0,0,.6);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.1);
   display: flex; align-items: center; justify-content: center;
-  font-size: .9rem; font-weight: 700; color: #333;
-  pointer-events: none; z-index: 15;
-  user-select: none;
+  font-size: 1rem; font-weight: 700; color: #1a1e2e;
+  pointer-events: none;
+  z-index: 6;
+  transition: transform .1s;
 }
 .cmp-target {
   position: absolute; inset: 0;
-  z-index: 20; cursor: ew-resize;
+  z-index: 10;
+  cursor: ew-resize;
+  touch-action: none;
 }
+.cmp-target:active ~ .cmp-handle { transform: translate(-50%, -50%) scale(.92); }
 
-.cmp-labels {
-  display: flex; justify-content: space-between;
-  padding: 5px 14px; font-size: .7rem; color: var(--dim);
-  border-bottom: 1px solid var(--border);
-}
-
-/* result-only view (below comparison) */
-.result-view {
-  display: flex; gap: 0;
+/* ─────────────────────────────────────────────────────────────────────
+   PREVIEW THUMBNAILS (below comparison)
+   ───────────────────────────────────────────────────────────────────── */
+.thumb-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
   border-top: 1px solid var(--border);
 }
-.result-half {
-  flex: 1; overflow: hidden;
-  background: repeating-conic-gradient(#1a1e2e 0% 25%, #252a3a 0% 50%) 0 0 / 16px 16px;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
+.thumb-cell {
+  display: flex; flex-direction: column;
   border-right: 1px solid var(--border);
 }
-.result-half:last-child { border-right: none; }
-.result-half img { max-width: 100%; max-height: 200px; object-fit: contain; }
-.result-half-label {
-  font-size: .65rem; text-align: center; color: var(--dim);
-  padding: 4px 0 10px; text-transform: uppercase; letter-spacing: .06em;
+.thumb-cell:last-child { border-right: none; }
+.thumb-label {
+  font-size: .65rem; text-align: center; color: var(--textDim);
+  padding: 8px 0 4px;
+  text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 600;
+  background: var(--surf2);
+}
+.thumb-img-wrap {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px;
+  min-height: 160px;
+  background-color: var(--surf);
+}
+.thumb-img-wrap.transparent {
+  background-color: #0a0c14;
+  background-image:
+    linear-gradient(45deg, #1c2030 25%, transparent 25%),
+    linear-gradient(-45deg, #1c2030 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1c2030 75%),
+    linear-gradient(-45deg, transparent 75%, #1c2030 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, 8px 0;
+}
+.thumb-img-wrap img {
+  max-width: 100%; max-height: 180px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
-/* card footer */
+/* CARD FOOTER */
 .card-foot {
-  padding: 10px 16px;
+  padding: 12px 18px;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; flex-wrap: wrap;
+  gap: 12px; flex-wrap: wrap;
   border-top: 1px solid var(--border);
+  background: var(--surf2);
 }
-.stats { display: flex; gap: 14px; flex-wrap: wrap; }
-.stat  { font-size: .74rem; color: var(--dim); }
-.stat b { color: #c7d2fe; }
+.stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.stat { font-size: .76rem; color: var(--textDim); display: flex; align-items: center; gap: 4px; }
+.stat b { color: var(--accentH); font-variant-numeric: tabular-nums; }
+.stat.enhanced { color: var(--successH); font-weight: 600; }
 
 .btn-dl {
-  background: var(--success); color: #fff; border: none;
-  border-radius: 8px; padding: 8px 20px;
+  background: var(--success); color: #fff;
+  border: none; border-radius: var(--rs);
+  padding: 9px 22px;
   font-size: .82rem; font-weight: 600;
-  cursor: pointer; transition: opacity .15s;
+  display: flex; align-items: center; gap: 6px;
+  transition: transform .15s, box-shadow .15s, background .15s;
+  box-shadow: 0 2px 10px rgba(34,197,94,.3);
 }
-.btn-dl:hover { opacity: .85; }
+.btn-dl:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(34,197,94,.45); }
+.btn-dl:active { transform: translateY(0); }
 
-/* error */
+/* ERROR CARD */
 .err-card {
-  background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.28);
-  border-radius: var(--r); padding: 14px 18px;
-  font-size: .84rem; color: #fca5a5;
+  background: rgba(239,68,68,.06);
+  border: 1px solid rgba(239,68,68,.3);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  font-size: .84rem;
+  color: var(--dangerH);
   animation: fadeUp .25s ease;
+  display: flex; gap: 12px; align-items: flex-start;
 }
+.err-card-icon { font-size: 1.2rem; flex-shrink: 0; }
+.err-card-body { flex: 1; line-height: 1.55; }
+.err-card-body strong { color: #fef2f2; font-weight: 600; }
 
-/* ── toast ──────────────────────────────────────────────────────────── */
+/* TOAST */
 #toast {
   position: fixed; bottom: 24px; right: 24px;
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: 10px; padding: 11px 18px; font-size: .83rem;
-  box-shadow: 0 4px 24px rgba(0,0,0,.45);
-  opacity: 0; transform: translateY(8px);
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  padding: 12px 20px;
+  font-size: .85rem;
+  box-shadow: var(--shadow-lg);
+  opacity: 0; transform: translateY(10px);
   transition: opacity .25s, transform .25s;
-  pointer-events: none; z-index: 9999;
+  pointer-events: none;
+  z-index: 9999;
+  max-width: 90vw;
 }
-#toast.show     { opacity: 1; transform: none; }
-#toast.ok  { border-color: var(--success); color: #4ade80; }
-#toast.err { border-color: var(--danger);  color: #fca5a5; }
+#toast.show { opacity: 1; transform: none; }
+#toast.ok  { border-color: var(--success); color: var(--successH); }
+#toast.err { border-color: var(--danger);  color: var(--dangerH); }
 
-::-webkit-scrollbar { width: 6px; }
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--borderH); }
 </style>
 </head>
 <body>
+
 <div class="wrap">
 
   <header>
-    <span class="logo">✂️</span>
-    <div>
+    <div class="logo-wrap">✂️</div>
+    <div class="head-text">
       <h1>BG Remover Pro</h1>
-      <p>Studio-grade AI background removal — BiRefNet + guided-filter refinement</p>
+      <p>Studio-grade AI background removal — instant, precise, transparent</p>
     </div>
-    <span id="badge">● Connecting…</span>
+    <span id="badge">Connecting…</span>
   </header>
 
-  <!-- Settings panel -->
+  <!-- Settings Panel -->
   <aside class="panel">
     <div class="section-title">Connection</div>
-    <div>
+    <div class="field">
       <label for="srvUrl">API Server URL</label>
       <input type="text" id="srvUrl" value="http://127.0.0.1:8000" placeholder="http://localhost:8000">
     </div>
-    <div>
-      <label for="apiKey">API Key <small style="color:var(--dim)">(blank = no auth)</small></label>
+    <div class="field">
+      <label for="apiKey">API Key <small>(leave blank if not set)</small></label>
       <input type="password" id="apiKey" placeholder="sk-…" autocomplete="off">
     </div>
 
     <div class="section-title">Processing</div>
-    <div>
+    <div class="field">
       <label for="quality">Quality Tier</label>
       <select id="quality">
-        <option value="fast">⚡ Fast — silueta @ 512px</option>
-        <option value="balanced">⚖️ Balanced — u2net @ 768px</option>
-        <option value="premium" selected>🏆 Premium — BiRefNet @ 1024px</option>
-        <option value="ultra">💎 Ultra — BiRefNet @ 1280px + matting</option>
+        <option value="fast">⚡ Fast — 512px (~1s)</option>
+        <option value="balanced">⚖️ Balanced — 768px (~2s)</option>
+        <option value="premium" selected>🏆 Premium — 1024px (~4s)</option>
+        <option value="ultra">💎 Ultra — 1280px + matting (~8s)</option>
         <option value="portrait">👤 Portrait — tuned for people &amp; hair</option>
       </select>
     </div>
 
     <div class="toggle-row">
-      <span class="lbl">Studio Enhancement</span>
-      <label class="toggle"><input type="checkbox" id="enhance"><span class="knob"></span></label>
+      <div class="toggle-lbl">
+        <span class="lbl">Studio Enhancement</span>
+        <span class="sub">Boost contrast, sharpness &amp; tone</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="enhance">
+        <span class="knob"></span>
+      </label>
     </div>
+
     <div class="toggle-row">
-      <span class="lbl">Replace Background</span>
-      <label class="toggle"><input type="checkbox" id="useBg" onchange="toggleBgRow(this.checked)"><span class="knob"></span></label>
+      <div class="toggle-lbl">
+        <span class="lbl">Replace Background</span>
+        <span class="sub">Solid color instead of transparent</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="useBg" onchange="toggleBgRow(this.checked)">
+        <span class="knob"></span>
+      </label>
     </div>
+
     <div class="color-row" id="bgRow" style="display:none">
       <div class="color-swatch">
-        <input type="color" id="bgColor" value="#ffffff" oninput="$('bgHex').value=this.value">
+        <input type="color" id="bgColor" value="#ffffff" oninput="syncColor('color')">
       </div>
-      <input type="text" id="bgHex" value="#ffffff"
-        oninput="if(/^#[0-9a-f]{6}$/i.test(this.value))$('bgColor').value=this.value">
+      <input type="text" id="bgHex" value="#ffffff" oninput="syncColor('text')" maxlength="7">
     </div>
 
     <button id="btnProcess" disabled onclick="startProcessing()">
@@ -431,11 +686,11 @@ main { display: flex; flex-direction: column; gap: 20px; }
       <span class="btext">🚀 Remove Background</span>
     </button>
 
-    <!-- Live progress + timer (shown only while processing) -->
+    <!-- Live progress -->
     <div class="live-prog" id="liveBlock">
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:.76rem;color:var(--dim)">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:.76rem;color:var(--textDim)">
         <span id="progLabel">0 / 0 files</span>
-        <span id="progPct" style="font-weight:700;color:#c7d2fe">0%</span>
+        <span id="progPct" style="font-weight:700;color:var(--accentH);font-variant-numeric:tabular-nums">0%</span>
       </div>
       <div class="prog-bar-bg"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
 
@@ -445,7 +700,7 @@ main { display: flex; flex-direction: column; gap: 20px; }
           <div class="tc-val" id="tcElapsed">0.0s</div>
         </div>
         <div class="timer-cell">
-          <div class="tc-label">Est. remaining</div>
+          <div class="tc-label">Remaining</div>
           <div class="tc-val" id="tcEta">—</div>
         </div>
         <div class="timer-cell">
@@ -454,7 +709,7 @@ main { display: flex; flex-direction: column; gap: 20px; }
         </div>
         <div class="timer-cell">
           <div class="tc-label">Status</div>
-          <div class="tc-val" id="tcStatus">Processing…</div>
+          <div class="tc-val" id="tcStatus" style="font-size:.85rem">Processing…</div>
         </div>
       </div>
     </div>
@@ -464,7 +719,7 @@ main { display: flex; flex-direction: column; gap: 20px; }
   <main>
     <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload images"
          onclick="if(event.target.tagName!=='BUTTON')$('fileInput').click()"
-         onkeydown="if(event.key==='Enter'||event.key===' ')$('fileInput').click()"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();$('fileInput').click();}"
          ondragover="event.preventDefault();this.classList.add('over')"
          ondragleave="this.classList.remove('over')"
          ondrop="handleDrop(event)">
@@ -479,101 +734,153 @@ main { display: flex; flex-direction: column; gap: 20px; }
     <div class="results" id="results"></div>
   </main>
 </div>
+
 <div id="toast"></div>
 
 <script>
-// ── helpers ────────────────────────────────────────────────────────────
-function $(id) { return document.getElementById(id); }
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g,
-    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+'use strict';
+
+// ─────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 let _toastT;
-function toast(msg, type='ok', ms=3200) {
+function toast(msg, type = 'ok', ms = 3200) {
   const el = $('toast');
-  el.textContent = msg; el.className = 'show ' + type;
+  el.textContent = msg;
+  el.className = 'show ' + type;
   clearTimeout(_toastT);
   _toastT = setTimeout(() => el.classList.remove('show'), ms);
 }
 
-// ── state ──────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────
 const files = [];
+let processing = false;
+let _cmpId = 0;
+const _fileTimes = {};
+let _tick = null;
+let _t0   = 0;
+let _done = 0;
+let _total = 0;
 
-// ── server health ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// Color picker sync
+// ─────────────────────────────────────────────────────────────────────
+function syncColor(source) {
+  const colorEl = $('bgColor');
+  const hexEl   = $('bgHex');
+  if (source === 'color') {
+    hexEl.value = colorEl.value;
+  } else {
+    let v = hexEl.value.trim();
+    if (!v.startsWith('#')) v = '#' + v;
+    if (/^#[0-9a-f]{6}$/i.test(v)) {
+      colorEl.value = v;
+      hexEl.value = v;
+    }
+  }
+}
+function toggleBgRow(on) { $('bgRow').style.display = on ? 'flex' : 'none'; }
+
+// ─────────────────────────────────────────────────────────────────────
+// Server health check
+// ─────────────────────────────────────────────────────────────────────
 async function checkHealth() {
   const url = $('srvUrl').value.trim().replace(/\/$/, '');
   const b = $('badge');
   try {
     const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
-    b.textContent = r.ok ? '● Online' : '● Error';
-    b.className   = r.ok ? 'ok' : 'err';
+    if (r.ok) {
+      b.textContent = 'Online';
+      b.className = 'ok';
+    } else {
+      b.textContent = 'Error';
+      b.className = 'err';
+    }
   } catch {
-    b.textContent = '● Offline'; b.className = 'err';
+    b.textContent = 'Offline';
+    b.className = 'err';
   }
 }
 checkHealth();
-setInterval(checkHealth, 8000);
+setInterval(checkHealth, 10000);
 $('srvUrl').addEventListener('change', checkHealth);
 
-// ── file management ────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// File management
+// ─────────────────────────────────────────────────────────────────────
 function addFiles(newFiles) {
+  let added = 0;
   newFiles.filter(f => f.type.startsWith('image/')).forEach(f => {
-    if (!files.find(x => x.name === f.name && x.size === f.size)) files.push(f);
+    if (!files.find(x => x.name === f.name && x.size === f.size)) {
+      files.push(f);
+      added++;
+    }
   });
   renderChips();
-  $('btnProcess').disabled = !files.length;
+  $('btnProcess').disabled = !files.length || processing;
+  if (added) toast(`Added ${added} image${added > 1 ? 's' : ''}`, 'ok', 1800);
 }
+
 function removeFile(i) {
-  files.splice(i, 1); renderChips();
-  $('btnProcess').disabled = !files.length;
+  files.splice(i, 1);
+  renderChips();
+  $('btnProcess').disabled = !files.length || processing;
 }
+
 function renderChips() {
   const chips = $('chips');
   chips.innerHTML = '';
   $('drop').classList.toggle('has', files.length > 0);
   files.forEach((f, i) => {
-    const c = document.createElement('div'); c.className = 'chip';
-    c.innerHTML = `<span>${esc(f.name)}</span>
-      <button onclick="event.stopPropagation();removeFile(${i})">×</button>`;
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.innerHTML =
+      `<span title="${esc(f.name)}">${esc(f.name)}</span>` +
+      `<button onclick="event.stopPropagation();removeFile(${i})" aria-label="Remove">×</button>`;
     chips.appendChild(c);
   });
 }
+
 function handleDrop(e) {
-  e.preventDefault(); $('drop').classList.remove('over');
+  e.preventDefault();
+  $('drop').classList.remove('over');
   addFiles([...e.dataTransfer.files]);
 }
-function toggleBgRow(on) { $('bgRow').style.display = on ? 'flex' : 'none'; }
 
-// ── live timer ─────────────────────────────────────────────────────────
-let _tick = null;
-let _t0   = 0;
-let _done = 0;
-let _total = 0;
-const _fileTimes = {};   // cardId → start timestamp
-
+// ─────────────────────────────────────────────────────────────────────
+// Live timer
+// ─────────────────────────────────────────────────────────────────────
 function startLive(total) {
-  _t0 = Date.now(); _done = 0; _total = total;
+  _t0 = Date.now();
+  _done = 0;
+  _total = total;
   $('liveBlock').classList.add('show');
+  $('tcStatus').textContent = 'Processing…';
+  $('tcStatus').style.color = '';
   updatePct(0, total);
   _tick = setInterval(_tickFn, 100);
 }
 
 function _tickFn() {
   const elapsed = (Date.now() - _t0) / 1000;
-
-  // Global cells
   $('tcElapsed').textContent = elapsed.toFixed(1) + 's';
+
   if (_done > 0 && _done < _total) {
     const avg = elapsed / _done;
     const eta = avg * (_total - _done);
     $('tcEta').textContent = Math.ceil(eta) + 's';
     $('tcAvg').textContent = avg.toFixed(1) + 's';
-  } else if (_done >= _total) {
+  } else if (_done >= _total && _total > 0) {
     $('tcEta').textContent = '—';
-    $('tcAvg').textContent = (_total > 0 ? (elapsed / _total).toFixed(1) : '—') + 's';
+    $('tcAvg').textContent = (elapsed / _total).toFixed(1) + 's';
   }
 
-  // Per-pending-card timers
   for (const [id, t0] of Object.entries(_fileTimes)) {
     const el = $('pt-' + id);
     if (el) el.textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
@@ -584,38 +891,39 @@ function tickDone(n) {
   _done = n;
   updatePct(n, _total);
   if (n >= _total) {
-    $('tcStatus').textContent = '✓ Done';
-    $('tcStatus').style.color = '#4ade80';
+    $('tcStatus').textContent = '✓ Complete';
+    $('tcStatus').style.color = 'var(--successH)';
     $('tcEta').textContent = '—';
   }
 }
 
 function updatePct(done, total) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  $('progBar').style.width   = pct + '%';
-  $('progPct').textContent   = pct + '%';
+  $('progBar').style.width = pct + '%';
+  $('progPct').textContent = pct + '%';
   $('progLabel').textContent = `${done} / ${total} file${total !== 1 ? 's' : ''}`;
 }
 
 function stopLive() {
-  clearInterval(_tick); _tick = null;
-  // Leave the block visible showing final totals; hide after 4s
+  clearInterval(_tick);
+  _tick = null;
   setTimeout(() => {
     $('liveBlock').classList.remove('show');
     $('tcStatus').textContent = 'Processing…';
     $('tcStatus').style.color = '';
-  }, 4000);
+  }, 5000);
 }
 
-// ── processing ─────────────────────────────────────────────────────────
-let processing = false;
-let _cmpId = 0;
-
+// ─────────────────────────────────────────────────────────────────────
+// Process batch
+// ─────────────────────────────────────────────────────────────────────
 async function startProcessing() {
   if (!files.length || processing) return;
   processing = true;
+
   const btn = $('btnProcess');
-  btn.disabled = true; btn.classList.add('loading');
+  btn.disabled = true;
+  btn.classList.add('loading');
   $('results').innerHTML = '';
 
   const server  = $('srvUrl').value.trim().replace(/\/$/, '');
@@ -627,12 +935,10 @@ async function startProcessing() {
 
   startLive(total);
 
-  // Capture current file list (snapshot) so removals mid-run don't affect us
   const batch = files.slice();
   const cards = [];
 
-  // Create pending placeholder cards first (so user sees all jobs)
-  batch.forEach((file, idx) => {
+  batch.forEach((file) => {
     const id = 'c' + (_cmpId++);
     cards.push(id);
     _fileTimes[id] = Date.now();
@@ -642,41 +948,69 @@ async function startProcessing() {
   let done = 0;
   await Promise.allSettled(batch.map(async (file, idx) => {
     const id = cards[idx];
-    setPendingStatus(id, 'Processing…');
+    setPendingStatus(id, 'Uploading & processing…');
     const res = await processOne(file, server, apiKey, quality, enhance, bgColor);
     delete _fileTimes[id];
     done++;
     tickDone(done);
-    replaceCard(id, res);
+    replaceCard(id, res, { enhance, hasBg: !!bgColor });
   }));
 
   processing = false;
-  btn.disabled = false; btn.classList.remove('loading');
+  btn.disabled = !files.length;
+  btn.classList.remove('loading');
   stopLive();
+
+  // Success summary toast
+  const okCount = $('results').querySelectorAll('.card').length;
+  if (okCount > 0) toast(`✓ Processed ${okCount} image${okCount > 1 ? 's' : ''}`, 'ok');
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Process single image
+// ─────────────────────────────────────────────────────────────────────
 async function processOne(file, server, apiKey, quality, enhance, bgColor) {
-  const fd = new FormData(); fd.append('file', file);
-  const p  = new URLSearchParams({ quality, enhance: enhance ? 'true' : 'false' });
+  const fd = new FormData();
+  fd.append('file', file);
+
+  const p = new URLSearchParams({ quality, enhance: enhance ? 'true' : 'false' });
   if (bgColor) p.set('bg_color', bgColor);
+
   const headers = apiKey ? { 'X-API-Key': apiKey } : {};
   const t0 = Date.now();
 
   try {
     const r = await fetch(`${server}/remove-bg?${p}`, { method: 'POST', headers, body: fd });
     if (!r.ok) {
-      const d = await r.json().then(j => j.detail || r.statusText).catch(() => r.statusText);
-      return { ok: false, file, error: `HTTP ${r.status}: ${d}` };
+      let detail = r.statusText;
+      try {
+        const j = await r.json();
+        if (j.detail) detail = j.detail;
+      } catch {}
+      return { ok: false, file, error: `HTTP ${r.status}: ${detail}` };
     }
-    const blob    = await r.blob();
+
+    const blob = await r.blob();
     const blobUrl = URL.createObjectURL(blob);
     const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+
+    // Try to read backend dimensions, fall back to local read
+    let w = r.headers.get('X-Image-Width');
+    let h = r.headers.get('X-Image-Height');
+    if (!w || !h || w === '?' || h === '?') {
+      try {
+        const dims = await getImageDims(blobUrl);
+        w = dims.w; h = dims.h;
+      } catch { w = '?'; h = '?'; }
+    }
+
     return {
-      ok: true, file, blobUrl,
+      ok: true,
+      file,
+      blobUrl,
       origUrl: URL.createObjectURL(file),
-      w:     r.headers.get('X-Image-Width')  || '?',
-      h:     r.headers.get('X-Image-Height') || '?',
-      model: r.headers.get('X-Model')        || '?',
+      w, h,
+      model: r.headers.get('X-Model')        || 'unknown',
       ms:    r.headers.get('X-Process-Time') || elapsed,
       name:  file.name.replace(/\.[^.]+$/, '') + '_no_bg.png',
     };
@@ -685,10 +1019,22 @@ async function processOne(file, server, apiKey, quality, enhance, bgColor) {
   }
 }
 
-// ── pending cards ──────────────────────────────────────────────────────
+function getImageDims(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Pending card
+// ─────────────────────────────────────────────────────────────────────
 function renderPendingCard(file, id) {
   const card = document.createElement('div');
-  card.className = 'card'; card.id = 'card-' + id;
+  card.className = 'card';
+  card.id = 'card-' + id;
   card.innerHTML = `
     <div class="card-head">
       <span class="fname" title="${esc(file.name)}">${esc(file.name)}</span>
@@ -697,7 +1043,7 @@ function renderPendingCard(file, id) {
     <div class="pending-body">
       <div class="pend-spin"></div>
       <div class="pend-info">
-        <div class="pend-status" id="ps-${id}">Uploading…</div>
+        <div class="pend-status" id="ps-${id}">Queued…</div>
         <div class="pend-timer">Elapsed: <b id="pt-${id}">0.0s</b></div>
       </div>
     </div>`;
@@ -709,52 +1055,75 @@ function setPendingStatus(id, txt) {
   if (el) el.textContent = txt;
 }
 
-// Replace pending card with result card (or error card) in-place
-function replaceCard(id, res) {
+// ─────────────────────────────────────────────────────────────────────
+// Replace pending card with result or error
+// ─────────────────────────────────────────────────────────────────────
+function replaceCard(id, res, ctx) {
   const card = $('card-' + id);
   if (!card) return;
 
   if (!res.ok) {
-    card.outerHTML = `<div class="err-card" style="animation:fadeUp .3s ease">
-      <strong>❌ ${esc(res.file.name)}</strong><br>${esc(res.error)}
-    </div>`;
+    card.outerHTML = `
+      <div class="err-card" style="animation:fadeUp .3s ease">
+        <span class="err-card-icon">⚠️</span>
+        <div class="err-card-body">
+          <strong>${esc(res.file.name)}</strong><br>
+          ${esc(res.error)}
+        </div>
+      </div>`;
     return;
   }
 
-  card.innerHTML = buildResultHTML(res, id);
-  setupCmp(id);
+  card.innerHTML = buildResultHTML(res, id, ctx);
+
+  // After insertion, set comparison wrap height & initialize slider
+  requestAnimationFrame(() => setupCmp(id));
 }
 
-function buildResultHTML(res, id) {
+// ─────────────────────────────────────────────────────────────────────
+// Build result card HTML
+// ─────────────────────────────────────────────────────────────────────
+function buildResultHTML(res, id, ctx) {
+  const enhanceTag = ctx.enhance
+    ? `<span class="tag" style="background:rgba(245,158,11,.15);color:#fcd34d">✨ Enhanced</span>` : '';
+  const bgTag = ctx.hasBg
+    ? `<span class="tag dim">🎨 BG Replaced</span>` : '';
+
+  const rightLabel = ctx.hasBg ? 'New Background' : 'Transparent';
+
   return `
     <div class="card-head">
       <span class="fname" title="${esc(res.name)}">${esc(res.name)}</span>
-      <span class="tag ok">✓ Done</span>
+      ${enhanceTag}
+      ${bgTag}
       <span class="tag dim">${esc(res.model)}</span>
+      <span class="tag ok">✓ Done</span>
     </div>
+
     <div class="cmp-labels">
-      <span>← Original</span>
-      <span style="color:#94a3b8;font-size:.67rem">⇔ drag to compare</span>
-      <span>Result →</span>
+      <span>← Result</span>
+      <span class="ml">⇔ Drag to compare</span>
+      <span>Original →</span>
     </div>
+
     <div class="cmp-wrap" id="wrap-${id}">
-      <img class="orig" src="${res.origUrl}" alt="original" draggable="false">
-      <img class="res"  id="res-${id}" src="${res.blobUrl}" alt="result" draggable="false">
+      <img class="orig" id="orig-${id}" src="${res.origUrl}" alt="original" draggable="false">
+      <img class="res"  id="res-${id}"  src="${res.blobUrl}" alt="result"   draggable="false">
       <div class="cmp-line"   id="line-${id}"></div>
       <div class="cmp-handle" id="hdl-${id}">⇔</div>
       <div class="cmp-target" id="tgt-${id}"></div>
     </div>
 
-    <div class="result-view">
-      <div>
-        <div class="result-half-label">Transparent result</div>
-        <div class="result-half">
-          <img src="${res.blobUrl}" alt="result transparent">
+    <div class="thumb-grid">
+      <div class="thumb-cell">
+        <div class="thumb-label">${ctx.hasBg ? 'With New Background' : 'Transparent Result'}</div>
+        <div class="thumb-img-wrap ${ctx.hasBg ? '' : 'transparent'}">
+          <img src="${res.blobUrl}" alt="result">
         </div>
       </div>
-      <div>
-        <div class="result-half-label">Original</div>
-        <div class="result-half" style="background:var(--surf2)">
+      <div class="thumb-cell">
+        <div class="thumb-label">Original</div>
+        <div class="thumb-img-wrap">
           <img src="${res.origUrl}" alt="original">
         </div>
       </div>
@@ -762,8 +1131,9 @@ function buildResultHTML(res, id) {
 
     <div class="card-foot">
       <div class="stats">
-        <span class="stat">📐 <b>${esc(res.w)}×${esc(res.h)}</b> px</span>
+        <span class="stat">📐 <b>${esc(res.w)} × ${esc(res.h)}</b> px</span>
         <span class="stat">⏱ <b>${esc(res.ms)}s</b></span>
+        ${ctx.enhance ? '<span class="stat enhanced">✨ Studio Enhanced</span>' : ''}
       </div>
       <button class="btn-dl" onclick="dlFile('${res.blobUrl}','${esc(res.name)}')">
         ⬇ Download PNG
@@ -771,50 +1141,117 @@ function buildResultHTML(res, id) {
     </div>`;
 }
 
-// ── comparison slider ──────────────────────────────────────────────────
-/*
-  FIX: clip-path uses inset(0 0 0 X%) — clips X% from the LEFT.
-  This means:
-    - At pct=50 → inset(0 0 0 50%) → original shows on LEFT, result on RIGHT ✓
-    - Drag right (pct→100) → more result revealed on the right ✓
-    - Drag left  (pct→0)   → result hidden, only original visible ✓
-*/
+// ─────────────────────────────────────────────────────────────────────
+// COMPARISON SLIDER — fixed & robust
+//
+// We set the comparison wrap to a fixed height based on the actual rendered
+// image aspect ratio, capped at 600px. Both images use absolute positioning
+// with object-fit: contain so they ALIGN PERFECTLY.
+//
+// clip-path: inset(top right bottom left) — we clip from the RIGHT side
+// of the result image, so result is visible on the LEFT of the divider.
+// ─────────────────────────────────────────────────────────────────────
 function setupCmp(id) {
   const wrap   = $('wrap-' + id);
-  const resImg = $('res-'  + id);
-  const line   = $('line-' + id);
-  const handle = $('hdl-'  + id);
-  const target = $('tgt-'  + id);
-  if (!wrap) return;
+  const origImg = $('orig-' + id);
+  const resImg  = $('res-'  + id);
+  const line    = $('line-' + id);
+  const handle  = $('hdl-'  + id);
+  const target  = $('tgt-'  + id);
+  if (!wrap || !origImg || !resImg) return;
+
+  // Set the wrap height based on the image's natural aspect ratio
+  function sizeWrap() {
+    const img = origImg.complete && origImg.naturalWidth ? origImg : resImg;
+    if (!img.naturalWidth) return;
+
+    const wrapWidth = wrap.clientWidth;
+    const aspectH = (img.naturalHeight / img.naturalWidth) * wrapWidth;
+    const finalH = Math.min(Math.max(aspectH, 280), 640);
+    wrap.style.height = finalH + 'px';
+  }
+
+  if (origImg.complete && origImg.naturalWidth) sizeWrap();
+  else origImg.addEventListener('load', sizeWrap, { once: true });
+
+  if (resImg.complete && resImg.naturalWidth) {
+    // also re-size after result loads
+    sizeWrap();
+  } else {
+    resImg.addEventListener('load', sizeWrap, { once: true });
+  }
+
+  // Re-size on window resize
+  const resizeObs = new ResizeObserver(sizeWrap);
+  resizeObs.observe(wrap);
 
   let drag = false;
 
   function setPct(pct) {
     pct = Math.max(2, Math.min(98, pct));
-    // inset(top right bottom left): clip left side by (100-pct)%
-    // → result visible on the RIGHT from pct% onward
-    resImg.style.clipPath = `inset(0 0 0 ${100 - pct}%)`;
+    // Show RESULT on the LEFT side of the divider:
+    // clip RIGHT (100-pct)% of the result → leaves left pct% visible
+    resImg.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
     line.style.left   = pct + '%';
     handle.style.left = pct + '%';
   }
 
-  function move(clientX) {
+  function moveFromEvent(clientX) {
     const r = wrap.getBoundingClientRect();
     setPct(((clientX - r.left) / r.width) * 100);
   }
 
-  target.addEventListener('mousedown',  e => { drag = true; move(e.clientX); e.preventDefault(); });
-  target.addEventListener('touchstart', e => { drag = true; move(e.touches[0].clientX); }, { passive: true });
-  window.addEventListener('mousemove',  e => { if (drag) move(e.clientX); });
-  window.addEventListener('touchmove',  e => { if (drag) move(e.touches[0].clientX); }, { passive: true });
-  window.addEventListener('mouseup',    () => { drag = false; });
-  window.addEventListener('touchend',   () => { drag = false; });
+  // Pointer events handle mouse, touch, and pen uniformly
+  target.addEventListener('pointerdown', e => {
+    drag = true;
+    target.setPointerCapture(e.pointerId);
+    moveFromEvent(e.clientX);
+  });
+  target.addEventListener('pointermove', e => {
+    if (drag) moveFromEvent(e.clientX);
+  });
+  target.addEventListener('pointerup', e => {
+    drag = false;
+    try { target.releasePointerCapture(e.pointerId); } catch {}
+  });
+  target.addEventListener('pointercancel', () => { drag = false; });
+
+  // Initial position
+  setPct(50);
 }
 
-// ── download ───────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// Download
+// ─────────────────────────────────────────────────────────────────────
 function dlFile(url, name) {
-  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast(`Downloaded ${name}`, 'ok', 2000);
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Keyboard shortcut: Ctrl/Cmd + Enter to process
+// ─────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    if (!$('btnProcess').disabled) startProcessing();
+  }
+});
+
+// Paste images directly from clipboard
+document.addEventListener('paste', e => {
+  const items = [...(e.clipboardData?.items || [])];
+  const imgs = items
+    .filter(i => i.type.startsWith('image/'))
+    .map(i => i.getAsFile())
+    .filter(Boolean);
+  if (imgs.length) addFiles(imgs);
+});
 </script>
 </body>
 </html>
