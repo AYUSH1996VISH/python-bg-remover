@@ -3,514 +3,800 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BG Remover Pro — Studio-Grade AI Background Removal</title>
-<meta name="description" content="Studio-grade AI background removal — upload, process, download in seconds.">
+<title>BG Remover Pro — AI Background Removal Studio</title>
+<meta name="description" content="Studio-grade AI background removal. Lightning fast, pixel perfect.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-/* ─────────────────────────────────────────────────────────────────────
-   RESET + ROOT
-   ───────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   RESET & ROOT
+   ═══════════════════════════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-  background: #0a0c14;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #060818;
   color: #e2e8f0;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
+  overflow-x: hidden;
+  position: relative;
 }
 input, select, button, textarea { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; border: none; background: none; color: inherit; }
 img { display: block; max-width: 100%; }
-button { cursor: pointer; }
+svg { display: block; }
 
 :root {
-  --bg:         #0a0c14;
-  --surf:       #141826;
-  --surf2:      #1c2030;
-  --surf3:      #252a3d;
-  --border:     #2a3048;
-  --borderH:    #3a4263;
+  --bg-0:       #060818;
+  --bg-1:       #0a0d22;
+  --surf:       rgba(20, 24, 48, 0.6);
+  --surf-solid: #141830;
+  --surf-2:     rgba(28, 32, 60, 0.7);
+  --surf-3:     rgba(40, 44, 78, 0.8);
+  --border:     rgba(99, 102, 241, 0.15);
+  --border-h:   rgba(99, 102, 241, 0.35);
+  --glass-blur: blur(20px);
 
   --accent:     #6366f1;
-  --accentH:    #818cf8;
-  --accent2:    #a855f7;
-
-  --success:    #22c55e;
-  --successH:   #4ade80;
-  --warn:       #f59e0b;
-  --danger:     #ef4444;
-  --dangerH:    #fca5a5;
+  --accent-h:   #818cf8;
+  --accent-2:   #a855f7;
+  --cyan:       #06b6d4;
+  --emerald:    #10b981;
+  --amber:      #f59e0b;
+  --rose:       #f43f5e;
 
   --text:       #e2e8f0;
-  --textDim:    #94a3b8;
-  --textBright: #f1f5f9;
+  --text-dim:   #94a3b8;
+  --text-mute:  #64748b;
+  --text-br:    #f8fafc;
 
-  --r:          14px;
+  --r:          16px;
   --rs:         10px;
+  --rxs:        8px;
 
-  --shadow-md:  0 4px 16px rgba(0,0,0,.4);
-  --shadow-lg:  0 12px 32px rgba(0,0,0,.6);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.4);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 40px rgba(99,102,241,0.3);
 
-  --grad-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --grad-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --grad-cool:   linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
+  --grad-warm:   linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
+  --grad-text:   linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f0abfc 100%);
 }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   ANIMATED BACKGROUND
+   ═══════════════════════════════════════════════════════════════════ */
+.bg-anim {
+  position: fixed; inset: 0; z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at top left, rgba(99,102,241,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(168,85,247,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at center, rgba(6,182,212,0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #060818 0%, #0a0d22 100%);
+}
+.bg-anim::before {
+  content: '';
+  position: absolute; inset: -50%;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(99,102,241,0.3) 0%, transparent 15%),
+    radial-gradient(circle at 80% 70%, rgba(168,85,247,0.25) 0%, transparent 15%),
+    radial-gradient(circle at 50% 50%, rgba(6,182,212,0.2) 0%, transparent 20%);
+  animation: bgFloat 25s ease-in-out infinite;
+  filter: blur(40px);
+  opacity: 0.6;
+}
+.bg-anim::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+}
+@keyframes bgFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33%      { transform: translate(5%, -5%) rotate(2deg); }
+  66%      { transform: translate(-5%, 5%) rotate(-2deg); }
+}
+
+/* Noise texture */
+.noise {
+  position: fixed; inset: 0; z-index: -1;
+  opacity: 0.02; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence baseFrequency='0.9'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    LAYOUT
-   ───────────────────────────────────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════════════ */
 .wrap {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 24px 20px 80px;
+  padding: 28px 24px 80px;
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 24px;
+  grid-template-columns: 360px 1fr;
+  gap: 28px;
   align-items: start;
 }
-@media (max-width: 900px) {
-  .wrap { grid-template-columns: 1fr; padding: 16px 12px 60px; gap: 16px; }
+@media (max-width: 960px) {
+  .wrap { grid-template-columns: 1fr; padding: 16px 14px 60px; gap: 18px; }
   .panel { position: static !important; }
 }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
    HEADER
-   ───────────────────────────────────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════════════ */
 header {
   grid-column: 1 / -1;
-  display: flex; align-items: center; gap: 16px;
-  padding-bottom: 18px;
+  display: flex; align-items: center; gap: 18px;
+  padding: 6px 4px 20px;
   border-bottom: 1px solid var(--border);
+  position: relative;
+}
+header::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-h), transparent);
+  opacity: 0.6;
 }
 .logo-wrap {
-  width: 44px; height: 44px;
+  width: 52px; height: 52px;
   background: var(--grad-accent);
-  border-radius: 12px;
+  border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, .35);
+  box-shadow: 0 8px 24px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
 }
+.logo-wrap::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  animation: shine 4s ease-in-out infinite;
+}
+@keyframes shine {
+  0%, 100% { transform: translateX(-100%); }
+  50%      { transform: translateX(100%); }
+}
+.logo-wrap svg { width: 28px; height: 28px; color: #fff; position: relative; z-index: 1; }
+
 .head-text { flex: 1; min-width: 0; }
 header h1 {
-  font-size: 1.35rem; font-weight: 700;
-  letter-spacing: -.4px; color: var(--textBright);
+  font-size: 1.5rem; font-weight: 800;
+  letter-spacing: -0.6px;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-header p { font-size: .8rem; color: var(--textDim); margin-top: 2px; }
+header p {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-top: 3px;
+  font-weight: 400;
+}
+
 #badge {
-  padding: 6px 14px; border-radius: 20px;
-  font-size: .72rem; font-weight: 600;
-  background: rgba(99,102,241,.12); color: var(--accentH);
-  border: 1px solid rgba(99,102,241,.3);
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(99,102,241,0.08);
+  color: var(--accent-h);
+  border: 1px solid rgba(99,102,241,0.25);
   white-space: nowrap;
-  display: flex; align-items: center; gap: 6px;
-  transition: all .25s;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.3s;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
-#badge::before {
-  content: ''; width: 7px; height: 7px; border-radius: 50%;
+.badge-dot {
+  width: 8px; height: 8px; border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 8px currentColor;
+  box-shadow: 0 0 12px currentColor;
   animation: pulse 2s infinite;
 }
-#badge.ok  { background: rgba(34,197,94,.1);  color: var(--successH); border-color: rgba(34,197,94,.3); }
-#badge.err { background: rgba(239,68,68,.1);  color: var(--dangerH);  border-color: rgba(239,68,68,.3); }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+#badge.ok  { background: rgba(16,185,129,0.08);  color: #34d399; border-color: rgba(16,185,129,0.3); }
+#badge.err { background: rgba(244,63,94,0.08);   color: #fb7185; border-color: rgba(244,63,94,0.3); }
+@keyframes pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.4; transform:scale(0.8)} }
 
-/* ─────────────────────────────────────────────────────────────────────
-   SETTINGS PANEL
-   ───────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   PANEL (GLASSMORPHISM)
+   ═══════════════════════════════════════════════════════════════════ */
 .panel {
   background: var(--surf);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 22px;
-  display: flex; flex-direction: column; gap: 16px;
-  position: sticky; top: 20px;
-  box-shadow: var(--shadow-md);
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 18px;
+  position: sticky; top: 24px;
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.03);
 }
+
 .section-title {
-  font-size: .68rem; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--textDim);
-  padding-bottom: 6px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 0.66rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 4px;
 }
 .section-title::before {
-  content: ''; width: 3px; height: 12px;
-  background: var(--accent); border-radius: 2px;
+  content: '';
+  width: 4px; height: 14px;
+  background: var(--grad-accent);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(99,102,241,0.5);
 }
-.field { display: flex; flex-direction: column; gap: 6px; }
+.section-title:first-child { margin-top: 0; }
+
+.field { display: flex; flex-direction: column; gap: 7px; }
 .field label {
-  font-size: .78rem; color: var(--textDim);
+  font-size: 0.78rem;
+  color: var(--text-dim);
   font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
 }
-.field label small { font-size: .7rem; opacity: .7; font-weight: 400; }
+.field label small {
+  font-size: 0.7rem;
+  opacity: 0.65;
+  font-weight: 400;
+}
 
 input[type=text], input[type=password], select {
   width: 100%;
-  background: var(--surf2);
+  background: rgba(0,0,0,0.25);
   border: 1px solid var(--border);
   border-radius: var(--rs);
   color: var(--text);
-  padding: 10px 12px;
+  padding: 11px 14px;
   outline: none;
-  transition: border-color .15s, background .15s;
+  transition: all 0.2s;
+  font-weight: 500;
 }
-input[type=text]:hover, input[type=password]:hover, select:hover { border-color: var(--borderH); }
-input:focus, select:focus { border-color: var(--accent); background: var(--surf3); }
-select { cursor: pointer; appearance: none;
+input[type=text]:hover, input[type=password]:hover, select:hover {
+  border-color: var(--border-h);
+  background: rgba(0,0,0,0.35);
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+  background: rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+}
+select {
+  cursor: pointer; appearance: none;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
+  background-position: right 14px center;
+  padding-right: 36px;
 }
-select option { background: #1a1e2e; padding: 8px; }
+select option { background: #14182e; color: var(--text); padding: 10px; }
 
 /* TOGGLES */
 .toggle-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 4px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  transition: all 0.2s;
 }
-.toggle-row .toggle-lbl { display: flex; flex-direction: column; gap: 2px; }
-.toggle-row .lbl { font-size: .85rem; color: var(--text); font-weight: 500; }
-.toggle-row .sub { font-size: .7rem; color: var(--textDim); }
+.toggle-row:hover { border-color: var(--border-h); background: rgba(0,0,0,0.3); }
+.toggle-row.active {
+  border-color: rgba(99,102,241,0.4);
+  background: rgba(99,102,241,0.08);
+}
+.toggle-lbl { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.toggle-lbl .lbl {
+  font-size: 0.84rem;
+  color: var(--text-br);
+  font-weight: 600;
+}
+.toggle-lbl .sub {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
 .toggle {
-  position: relative; width: 42px; height: 24px;
+  position: relative; width: 44px; height: 26px;
   flex-shrink: 0;
 }
-.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
 .knob {
   position: absolute; inset: 0;
-  background: var(--surf3);
+  background: rgba(0,0,0,0.4);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 13px;
   cursor: pointer;
-  transition: background .25s, border-color .25s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .knob::before {
   content: ''; position: absolute;
-  width: 18px; height: 18px;
-  background: var(--textDim);
+  width: 20px; height: 20px;
+  background: linear-gradient(135deg, #94a3b8, #64748b);
   border-radius: 50%;
   top: 2px; left: 2px;
-  transition: transform .25s, background .25s;
-  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 .toggle input:checked ~ .knob {
-  background: var(--accent); border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+  background: var(--grad-accent);
+  border-color: transparent;
+  box-shadow: 0 0 16px rgba(99,102,241,0.5);
 }
-.toggle input:checked ~ .knob::before { transform: translateX(18px); background: #fff; }
+.toggle input:checked ~ .knob::before {
+  transform: translateX(18px);
+  background: linear-gradient(135deg, #fff, #f1f5f9);
+}
 
 /* COLOR PICKER */
 .color-row {
-  display: flex; gap: 8px; align-items: center;
-  padding: 6px 10px;
-  background: var(--surf2); border: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
   border-radius: var(--rs);
 }
 .color-swatch {
-  width: 32px; height: 32px; border-radius: 8px;
-  border: 2px solid var(--border); overflow: hidden;
-  flex-shrink: 0; cursor: pointer; position: relative;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 2px solid var(--border-h);
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
 }
 .color-swatch input[type=color] {
-  width: 200%; height: 200%; margin: -50% 0 0 -50%;
-  border: none; padding: 0; cursor: pointer; background: none;
+  width: 200%; height: 200%;
+  margin: -50% 0 0 -50%;
+  border: none; padding: 0; cursor: pointer;
+  background: none;
 }
 .color-row input[type=text] {
-  flex: 1; background: transparent; border: none;
-  padding: 4px 6px; font-family: ui-monospace, monospace;
-  font-size: .85rem;
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-br);
 }
+.color-row input[type=text]:focus { box-shadow: none; }
 
 /* PROCESS BUTTON */
 #btnProcess {
   width: 100%;
   background: var(--grad-accent);
   color: #fff;
-  border: none;
   border-radius: var(--rs);
-  padding: 13px 16px;
-  font-size: .9rem; font-weight: 600;
-  letter-spacing: .02em;
+  padding: 14px 18px;
+  font-size: 0.92rem; font-weight: 700;
+  letter-spacing: 0.02em;
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: transform .15s, box-shadow .15s, opacity .15s;
-  box-shadow: 0 4px 14px rgba(99,102,241,.4);
+  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  position: relative;
+  overflow: hidden;
 }
+#btnProcess::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+#btnProcess:hover:not(:disabled)::before { transform: translateX(100%); }
 #btnProcess:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(99,102,241,.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(99,102,241,0.6), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 #btnProcess:active:not(:disabled) { transform: translateY(0); }
-#btnProcess:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+#btnProcess:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+#btnProcess svg { width: 18px; height: 18px; }
+
 .spin {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.3);
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.25);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin .7s linear infinite;
+  animation: spin 0.7s linear infinite;
   display: none;
 }
-.loading .spin  { display: block; }
-.loading .btext { display: none; }
+.loading .spin    { display: block; }
+.loading .btext,
+.loading .bicon   { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* LIVE PROGRESS */
 .live-prog {
   display: none;
-  flex-direction: column; gap: 10px;
+  flex-direction: column; gap: 12px;
   padding-top: 4px;
+  animation: fadeIn 0.3s ease;
 }
 .live-prog.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.prog-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.76rem; color: var(--text-dim);
+}
+.prog-head .pct {
+  font-weight: 800; font-size: 0.9rem;
+  color: var(--accent-h);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+}
 .prog-bar-bg {
-  height: 6px; background: var(--surf3); border-radius: 3px; overflow: hidden;
+  height: 8px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
 }
 .prog-bar {
-  height: 100%; background: var(--grad-accent);
-  border-radius: 3px; transition: width .3s;
+  height: 100%;
+  background: var(--grad-accent);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: 0 0 12px rgba(99,102,241,0.5);
 }
+.prog-bar::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: progShine 1.5s linear infinite;
+}
+@keyframes progShine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
 .timer-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
 }
 .timer-cell {
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: var(--rs); padding: 8px 11px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: var(--rxs);
+  padding: 10px 12px;
+  transition: all 0.2s;
 }
+.timer-cell:hover { border-color: var(--border-h); }
 .tc-label {
-  font-size: .65rem; color: var(--textDim);
-  text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
+  font-size: 0.62rem; color: var(--text-mute);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 700;
 }
 .tc-val {
-  font-size: 1rem; font-weight: 700;
-  color: var(--accentH); margin-top: 3px;
+  font-size: 1.05rem; font-weight: 800;
+  color: var(--accent-h);
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
-.tc-val.green { color: var(--successH); }
+.tc-val.green { color: #34d399; }
+.tc-val.small { font-size: 0.82rem; font-family: 'Inter', sans-serif; font-weight: 700; }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
    MAIN AREA
-   ───────────────────────────────────────────────────────────────────── */
-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+   ═══════════════════════════════════════════════════════════════════ */
+main { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 
 /* DROP ZONE */
 .drop {
   background: var(--surf);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 2px dashed var(--border);
   border-radius: var(--r);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; min-height: 220px;
+  gap: 12px; min-height: 240px;
   cursor: pointer;
-  transition: border-color .2s, background .2s, transform .2s;
-  text-align: center; padding: 32px 24px;
+  transition: all 0.25s;
+  text-align: center; padding: 36px 24px;
   position: relative;
   overflow: hidden;
 }
 .drop::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(99,102,241,.05) 0%, transparent 70%);
-  opacity: 0; transition: opacity .25s;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(99,102,241,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(168,85,247,0.06) 0%, transparent 50%);
+  opacity: 0; transition: opacity 0.3s;
   pointer-events: none;
 }
 .drop:hover::before, .drop.over::before { opacity: 1; }
 .drop.over {
   border-color: var(--accent);
-  background: rgba(99,102,241,.04);
+  background: rgba(99,102,241,0.06);
   transform: scale(1.005);
 }
 .drop.has  {
   border-style: solid;
-  border-color: rgba(99,102,241,.4);
-  min-height: 140px;
+  border-color: var(--border-h);
+  min-height: 160px;
 }
 .drop-icon {
-  font-size: 2.4rem;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
-  transition: transform .3s;
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--grad-accent);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.drop:hover .drop-icon { transform: translateY(-3px) scale(1.05); }
+.drop:hover .drop-icon, .drop.over .drop-icon {
+  transform: translateY(-4px) scale(1.05);
+}
+.drop-icon svg { width: 28px; height: 28px; color: #fff; }
+
 .drop h3 {
-  font-size: 1rem; font-weight: 600;
-  color: var(--textBright);
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text-br);
+  letter-spacing: -0.2px;
 }
-.drop p { font-size: .78rem; color: var(--textDim); }
+.drop p {
+  font-size: 0.8rem; color: var(--text-dim);
+  font-weight: 500;
+}
 #fileInput { display: none; }
 
 /* FILE CHIPS */
 .chips {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  width: 100%; justify-content: center; margin-top: 8px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  width: 100%; justify-content: center;
+  margin-top: 10px;
   max-width: 100%;
 }
 .chip {
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 5px 6px 5px 12px;
-  font-size: .73rem;
-  display: flex; align-items: center; gap: 6px;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 100px;
+  padding: 6px 8px 6px 14px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
   max-width: 100%;
+  color: var(--text);
+  transition: all 0.2s;
 }
+.chip:hover { border-color: var(--accent-h); }
 .chip span {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 200px;
+  max-width: 220px;
 }
 .chip button {
-  background: var(--surf3); border: none;
-  color: var(--textDim);
-  font-size: .9rem; line-height: 1;
-  padding: 0; width: 20px; height: 20px;
+  background: rgba(0,0,0,0.3);
+  color: var(--text-dim);
+  font-size: 0.95rem; line-height: 1;
+  width: 22px; height: 22px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  transition: background .15s, color .15s;
+  transition: all 0.15s;
+  flex-shrink: 0;
 }
-.chip button:hover { background: var(--danger); color: #fff; }
+.chip button:hover { background: var(--rose); color: #fff; }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
    RESULT CARDS
-   ───────────────────────────────────────────────────────────────────── */
-.results { display: flex; flex-direction: column; gap: 18px; }
+   ═══════════════════════════════════════════════════════════════════ */
+.results { display: flex; flex-direction: column; gap: 20px; }
 
 .card {
   background: var(--surf);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border);
   border-radius: var(--r);
   overflow: hidden;
-  animation: fadeUp .35s ease;
+  animation: fadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-md);
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: none; }
 }
 
 .card-head {
-  padding: 13px 18px;
+  padding: 14px 18px;
   display: flex; align-items: center; gap: 10px;
   border-bottom: 1px solid var(--border);
-  font-size: .82rem;
-  background: linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
 }
 .card-head .fname {
-  flex: 1; font-weight: 600; color: var(--textBright);
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-br);
+  font-size: 0.88rem;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .tag {
-  padding: 3px 9px;
-  border-radius: 11px;
-  font-size: .68rem; font-weight: 700;
-  background: rgba(99,102,241,.15); color: var(--accentH);
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(99,102,241,0.15);
+  color: var(--accent-h);
   display: flex; align-items: center; gap: 5px;
   white-space: nowrap;
+  border: 1px solid rgba(99,102,241,0.2);
 }
-.tag.ok   { background: rgba(34,197,94,.12); color: var(--successH); }
-.tag.dim  { background: var(--surf3);        color: var(--textDim); }
-.tag.spin-tag { background: rgba(99,102,241,.12); color: var(--accentH); }
+.tag.ok      { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.25); }
+.tag.dim     { background: rgba(255,255,255,0.05); color: var(--text-dim); border-color: rgba(255,255,255,0.08); }
+.tag.warm    { background: rgba(245,158,11,0.12); color: #fcd34d; border-color: rgba(245,158,11,0.25); }
+.tag.cool    { background: rgba(6,182,212,0.12); color: #67e8f9; border-color: rgba(6,182,212,0.25); }
+.tag.spin-tag { background: rgba(99,102,241,0.12); color: var(--accent-h); }
 .tag-spin {
   width: 10px; height: 10px;
-  border: 1.5px solid rgba(129,140,248,.3);
-  border-top-color: var(--accentH);
-  border-radius: 50%; animation: spin .7s linear infinite;
+  border: 1.5px solid rgba(129,140,248,0.3);
+  border-top-color: var(--accent-h);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 
 /* PENDING CARD */
 .pending-body {
   display: flex; align-items: center; justify-content: center;
-  gap: 22px; padding: 40px 24px; min-height: 150px;
+  gap: 24px; padding: 44px 24px; min-height: 160px;
 }
 .pend-spin {
-  width: 38px; height: 38px; flex-shrink: 0;
-  border: 3px solid var(--border);
+  width: 44px; height: 44px; flex-shrink: 0;
+  border: 3px solid rgba(99,102,241,0.15);
   border-top-color: var(--accent);
-  border-radius: 50%; animation: spin .8s linear infinite;
+  border-right-color: var(--accent-2);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
-.pend-info { display: flex; flex-direction: column; gap: 5px; }
-.pend-status { font-size: .9rem; color: var(--text); font-weight: 500; }
-.pend-timer  { font-size: .78rem; color: var(--textDim); }
-.pend-timer b { color: var(--accentH); font-variant-numeric: tabular-nums; }
+.pend-info { display: flex; flex-direction: column; gap: 6px; }
+.pend-status {
+  font-size: 0.92rem;
+  color: var(--text);
+  font-weight: 600;
+}
+.pend-timer {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.pend-timer b {
+  color: var(--accent-h);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
 
-/* ─────────────────────────────────────────────────────────────────────
-   COMPARISON SLIDER (THE FIX!)
+/* ═══════════════════════════════════════════════════════════════════
+   COMPARISON SLIDER — THE REAL FIX
+   ═══════════════════════════════════════════════════════════════════
+   Strategy: We DON'T use a single image with clip-path. Instead, we use
+   TWO separate "panels" (.cmp-side-orig and .cmp-side-res), each with
+   its own image, and we control their WIDTH so the slider physically
+   reveals the other side.
 
-   Layout strategy:
-   - .cmp-wrap has a FIXED height (set via JS once images load)
-   - Both images use position: absolute; inset: 0; object-fit: contain
-   - Original sits underneath (z=1)
-   - Result sits on top (z=2) with clip-path on the LEFT side
-   - clip-path: inset(0 RIGHT% 0 0) — clips from the LEFT,
-     revealing result LEFT of the divider
-   - Checkerboard background visible BEHIND result wherever it's transparent
-   ───────────────────────────────────────────────────────────────────── */
+   - .cmp-side-orig is on the RIGHT (overlay), width adjustable
+   - .cmp-side-res  is on the LEFT (base layer, full width, transparent BG)
+   - Slider at 50% → both panels visible at half width
+   - Drag right → orig panel shrinks → more result visible
+   - Drag left  → orig panel grows  → more original visible
+
+   CRITICAL: The result side has its OWN checkerboard background that's
+   always visible (because the result PNG is transparent).
+   ═══════════════════════════════════════════════════════════════════ */
 .cmp-labels {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 16px;
-  font-size: .72rem; color: var(--textDim);
-  background: var(--surf2);
+  padding: 10px 18px;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.25);
   border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
-.cmp-labels .ml { color: var(--accentH); font-weight: 600; font-size: .68rem; }
+.cmp-labels .side {
+  display: flex; align-items: center; gap: 6px;
+}
+.cmp-labels .ml {
+  color: var(--accent-h);
+  font-weight: 700;
+  font-size: 0.7rem;
+  display: flex; align-items: center; gap: 6px;
+}
+.cmp-labels svg { width: 12px; height: 12px; }
 
 .cmp-wrap {
   position: relative;
   width: 100%;
-  background-color: #0a0c14;
-  background-image:
-    linear-gradient(45deg, #1c2030 25%, transparent 25%),
-    linear-gradient(-45deg, #1c2030 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #1c2030 75%),
-    linear-gradient(-45deg, transparent 75%, #1c2030 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, 10px 0;
-  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+  background: #060818;
+  overflow: hidden;
 }
-.cmp-wrap img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: contain;
+
+/* LEFT (base) side — RESULT with checkerboard */
+.cmp-side-res {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 100%;
+  background-color: #060818;
+  background-image:
+    linear-gradient(45deg, rgba(99,102,241,0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(99,102,241,0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(99,102,241,0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(99,102,241,0.08) 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, 12px 0;
+}
+
+/* RIGHT (overlay) side — ORIGINAL, width adjustable */
+.cmp-side-orig {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 50%; /* JS controls this */
+  overflow: hidden;
+  background: #060818;
+}
+
+/* Both images: full container size, object-fit contain */
+.cmp-img {
+  position: absolute;
+  top: 0; left: 0;
+  /* image is sized to the FULL wrap size (not the side) */
   pointer-events: none;
   -webkit-user-drag: none;
+  user-drag: none;
 }
-.cmp-wrap img.orig { z-index: 1; }
-.cmp-wrap img.res  {
-  z-index: 2;
-  /* default: show result on LEFT half */
-  clip-path: inset(0 50% 0 0);
+.cmp-img.orig {
+  /* original image anchored to RIGHT side of its (right-positioned) container */
+  right: 0; left: auto;
 }
+
 .cmp-line {
   position: absolute; top: 0; bottom: 0; left: 50%;
   width: 2px;
-  background: #fff;
+  background: linear-gradient(180deg, #fff 0%, #f1f5f9 100%);
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 5;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.3), 0 0 8px rgba(0,0,0,.3);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.5);
 }
 .cmp-handle {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 50%;
   background: #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.1);
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(0,0,0,0.1),
+    inset 0 -2px 4px rgba(0,0,0,0.06);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; font-weight: 700; color: #1a1e2e;
   pointer-events: none;
   z-index: 6;
-  transition: transform .1s;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.cmp-handle svg { width: 22px; height: 22px; color: #1a1e2e; }
 .cmp-target {
   position: absolute; inset: 0;
   z-index: 10;
   cursor: ew-resize;
   touch-action: none;
 }
-.cmp-target:active ~ .cmp-handle { transform: translate(-50%, -50%) scale(.92); }
+.cmp-target:active ~ .cmp-handle { transform: translate(-50%, -50%) scale(0.92); }
 
-/* ─────────────────────────────────────────────────────────────────────
-   PREVIEW THUMBNAILS (below comparison)
-   ───────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   PREVIEW THUMBNAILS
+   ═══════════════════════════════════════════════════════════════════ */
 .thumb-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   border-top: 1px solid var(--border);
 }
 .thumb-cell {
@@ -519,157 +805,213 @@ main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 }
 .thumb-cell:last-child { border-right: none; }
 .thumb-label {
-  font-size: .65rem; text-align: center; color: var(--textDim);
-  padding: 8px 0 4px;
-  text-transform: uppercase; letter-spacing: .08em;
-  font-weight: 600;
-  background: var(--surf2);
+  font-size: 0.66rem;
+  text-align: center; color: var(--text-dim);
+  padding: 9px 0 5px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 700;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid var(--border);
 }
 .thumb-img-wrap {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
-  padding: 14px;
-  min-height: 160px;
-  background-color: var(--surf);
+  padding: 18px;
+  min-height: 180px;
+  background-color: var(--surf-solid);
 }
 .thumb-img-wrap.transparent {
-  background-color: #0a0c14;
+  background-color: #060818;
   background-image:
-    linear-gradient(45deg, #1c2030 25%, transparent 25%),
-    linear-gradient(-45deg, #1c2030 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #1c2030 75%),
-    linear-gradient(-45deg, transparent 75%, #1c2030 75%);
-  background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, 8px 0;
+    linear-gradient(45deg, rgba(99,102,241,0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(99,102,241,0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(99,102,241,0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(99,102,241,0.08) 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px, 9px -9px, 9px 0;
 }
 .thumb-img-wrap img {
-  max-width: 100%; max-height: 180px;
+  max-width: 100%; max-height: 200px;
   object-fit: contain;
-  border-radius: 4px;
 }
 
 /* CARD FOOTER */
 .card-foot {
-  padding: 12px 18px;
+  padding: 14px 18px;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
+  gap: 14px; flex-wrap: wrap;
   border-top: 1px solid var(--border);
-  background: var(--surf2);
+  background: rgba(0,0,0,0.2);
 }
-.stats { display: flex; gap: 16px; flex-wrap: wrap; }
-.stat { font-size: .76rem; color: var(--textDim); display: flex; align-items: center; gap: 4px; }
-.stat b { color: var(--accentH); font-variant-numeric: tabular-nums; }
-.stat.enhanced { color: var(--successH); font-weight: 600; }
+.stats { display: flex; gap: 18px; flex-wrap: wrap; }
+.stat {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 500;
+}
+.stat svg { width: 14px; height: 14px; opacity: 0.7; }
+.stat b {
+  color: var(--accent-h);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.stat.enhanced { color: #34d399; font-weight: 600; }
+.stat.enhanced svg { opacity: 1; }
 
 .btn-dl {
-  background: var(--success); color: #fff;
-  border: none; border-radius: var(--rs);
-  padding: 9px 22px;
-  font-size: .82rem; font-weight: 600;
-  display: flex; align-items: center; gap: 6px;
-  transition: transform .15s, box-shadow .15s, background .15s;
-  box-shadow: 0 2px 10px rgba(34,197,94,.3);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border-radius: var(--rs);
+  padding: 10px 22px;
+  font-size: 0.83rem; font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(16,185,129,0.35);
 }
-.btn-dl:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(34,197,94,.45); }
+.btn-dl:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16,185,129,0.5);
+}
 .btn-dl:active { transform: translateY(0); }
+.btn-dl svg { width: 16px; height: 16px; }
 
 /* ERROR CARD */
 .err-card {
-  background: rgba(239,68,68,.06);
-  border: 1px solid rgba(239,68,68,.3);
-  border-left: 4px solid var(--danger);
+  background: rgba(244,63,94,0.06);
+  border: 1px solid rgba(244,63,94,0.3);
+  border-left: 4px solid var(--rose);
   border-radius: var(--r);
-  padding: 16px 20px;
-  font-size: .84rem;
-  color: var(--dangerH);
-  animation: fadeUp .25s ease;
-  display: flex; gap: 12px; align-items: flex-start;
+  padding: 18px 22px;
+  font-size: 0.86rem;
+  color: #fb7185;
+  animation: fadeUp 0.3s ease;
+  display: flex; gap: 14px; align-items: flex-start;
+  backdrop-filter: var(--glass-blur);
 }
-.err-card-icon { font-size: 1.2rem; flex-shrink: 0; }
-.err-card-body { flex: 1; line-height: 1.55; }
-.err-card-body strong { color: #fef2f2; font-weight: 600; }
+.err-icon-wrap {
+  width: 32px; height: 32px;
+  background: rgba(244,63,94,0.15);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.err-icon-wrap svg { width: 18px; height: 18px; color: var(--rose); }
+.err-body { flex: 1; line-height: 1.55; }
+.err-body strong { color: #fef2f2; font-weight: 700; display: block; margin-bottom: 3px; }
 
 /* TOAST */
 #toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: var(--surf);
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--surf-solid);
   border: 1px solid var(--border);
   border-radius: var(--rs);
-  padding: 12px 20px;
-  font-size: .85rem;
+  padding: 14px 22px;
+  font-size: 0.86rem;
+  font-weight: 500;
   box-shadow: var(--shadow-lg);
-  opacity: 0; transform: translateY(10px);
-  transition: opacity .25s, transform .25s;
+  opacity: 0; transform: translateY(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   z-index: 9999;
   max-width: 90vw;
+  backdrop-filter: var(--glass-blur);
+  display: flex; align-items: center; gap: 10px;
 }
 #toast.show { opacity: 1; transform: none; }
-#toast.ok  { border-color: var(--success); color: var(--successH); }
-#toast.err { border-color: var(--danger);  color: var(--dangerH); }
+#toast.ok  { border-color: rgba(16,185,129,0.4); color: #34d399; }
+#toast.err { border-color: rgba(244,63,94,0.4);  color: #fb7185; }
+#toast svg { width: 18px; height: 18px; flex-shrink: 0; }
 
 /* SCROLLBAR */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--borderH); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.3);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99,102,241,0.5);
+  background-clip: padding-box;
+}
+
+/* SELECTION */
+::selection { background: rgba(99,102,241,0.4); color: #fff; }
 </style>
 </head>
 <body>
 
+<div class="bg-anim"></div>
+<div class="noise"></div>
+
 <div class="wrap">
 
   <header>
-    <div class="logo-wrap">✂️</div>
+    <div class="logo-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="6" cy="6" r="3"/>
+        <circle cx="6" cy="18" r="3"/>
+        <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+        <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+        <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+      </svg>
+    </div>
     <div class="head-text">
       <h1>BG Remover Pro</h1>
-      <p>Studio-grade AI background removal — instant, precise, transparent</p>
+      <p>Studio-grade AI background removal — lightning fast, pixel perfect</p>
     </div>
-    <span id="badge">Connecting…</span>
+    <span id="badge">
+      <span class="badge-dot"></span>
+      <span>Connecting</span>
+    </span>
   </header>
 
   <!-- Settings Panel -->
   <aside class="panel">
     <div class="section-title">Connection</div>
     <div class="field">
-      <label for="srvUrl">API Server URL</label>
+      <label for="srvUrl">API Server</label>
       <input type="text" id="srvUrl" value="http://127.0.0.1:8000" placeholder="http://localhost:8000">
     </div>
     <div class="field">
-      <label for="apiKey">API Key <small>(leave blank if not set)</small></label>
-      <input type="password" id="apiKey" placeholder="sk-…" autocomplete="off">
+      <label for="apiKey">API Key <small>optional</small></label>
+      <input type="password" id="apiKey" placeholder="Leave blank if not required" autocomplete="off">
     </div>
 
     <div class="section-title">Processing</div>
     <div class="field">
       <label for="quality">Quality Tier</label>
       <select id="quality">
-        <option value="fast">⚡ Fast — 512px (~1s)</option>
-        <option value="balanced">⚖️ Balanced — 768px (~2s)</option>
-        <option value="premium" selected>🏆 Premium — 1024px (~4s)</option>
-        <option value="ultra">💎 Ultra — 1280px + matting (~8s)</option>
-        <option value="portrait">👤 Portrait — tuned for people &amp; hair</option>
+        <option value="fast">Fast — 512px · ~1s</option>
+        <option value="balanced">Balanced — 768px · ~2s</option>
+        <option value="premium" selected>Premium — 1024px · ~4s</option>
+        <option value="ultra">Ultra — 1280px + matting · ~8s</option>
+        <option value="portrait">Portrait — tuned for people &amp; hair</option>
       </select>
     </div>
 
-    <div class="toggle-row">
+    <div class="toggle-row" id="enhanceRow">
       <div class="toggle-lbl">
         <span class="lbl">Studio Enhancement</span>
-        <span class="sub">Boost contrast, sharpness &amp; tone</span>
+        <span class="sub">Auto-boost contrast &amp; sharpness</span>
       </div>
       <label class="toggle">
-        <input type="checkbox" id="enhance">
+        <input type="checkbox" id="enhance" onchange="toggleRowState('enhanceRow', this.checked)">
         <span class="knob"></span>
       </label>
     </div>
 
-    <div class="toggle-row">
+    <div class="toggle-row" id="bgToggleRow">
       <div class="toggle-lbl">
         <span class="lbl">Replace Background</span>
         <span class="sub">Solid color instead of transparent</span>
       </div>
       <label class="toggle">
-        <input type="checkbox" id="useBg" onchange="toggleBgRow(this.checked)">
+        <input type="checkbox" id="useBg" onchange="toggleBgRow(this.checked); toggleRowState('bgToggleRow', this.checked)">
         <span class="knob"></span>
       </label>
     </div>
@@ -683,14 +1025,16 @@ main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
     <button id="btnProcess" disabled onclick="startProcessing()">
       <div class="spin"></div>
-      <span class="btext">🚀 Remove Background</span>
+      <svg class="bicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      <span class="btext">Remove Background</span>
     </button>
 
-    <!-- Live progress -->
     <div class="live-prog" id="liveBlock">
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:.76rem;color:var(--textDim)">
+      <div class="prog-head">
         <span id="progLabel">0 / 0 files</span>
-        <span id="progPct" style="font-weight:700;color:var(--accentH);font-variant-numeric:tabular-nums">0%</span>
+        <span class="pct" id="progPct">0%</span>
       </div>
       <div class="prog-bar-bg"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
 
@@ -709,7 +1053,7 @@ main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
         </div>
         <div class="timer-cell">
           <div class="tc-label">Status</div>
-          <div class="tc-val" id="tcStatus" style="font-size:.85rem">Processing…</div>
+          <div class="tc-val small" id="tcStatus">Working</div>
         </div>
       </div>
     </div>
@@ -725,9 +1069,15 @@ main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
          ondrop="handleDrop(event)">
       <input type="file" id="fileInput" multiple accept="image/*"
              onchange="addFiles([...this.files]);this.value=''">
-      <span class="drop-icon">📂</span>
+      <div class="drop-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
       <h3>Drop images here or click to upload</h3>
-      <p>JPG · PNG · WebP · BMP — up to 25 MB each · batch supported</p>
+      <p>JPG · PNG · WebP · BMP — up to 25 MB each · batch supported · paste from clipboard</p>
       <div class="chips" id="chips"></div>
     </div>
 
@@ -740,25 +1090,38 @@ main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 <script>
 'use strict';
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Helpers
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+const ICONS = {
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  drag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 3 12 9 6"/><polyline points="15 18 21 12 15 6"/></svg>`,
+  arrowL: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`,
+  arrowR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+  ruler: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 8.7L15.3 2.7c-.4-.4-1-.4-1.4 0l-11.2 11.2c-.4.4-.4 1 0 1.4l6 6c.4.4 1 .4 1.4 0L21.3 10.1c.4-.4.4-1 0-1.4z"/><path d="M7.5 12.5l2 2M10.5 9.5l2 2M13.5 6.5l2 2"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  sparkle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>`,
+};
+
 let _toastT;
-function toast(msg, type = 'ok', ms = 3200) {
+function toast(msg, type = 'ok', ms = 2800) {
   const el = $('toast');
-  el.textContent = msg;
+  const icon = type === 'ok' ? ICONS.check : ICONS.alert;
+  el.innerHTML = `${icon}<span>${esc(msg)}</span>`;
   el.className = 'show ' + type;
   clearTimeout(_toastT);
   _toastT = setTimeout(() => el.classList.remove('show'), ms);
 }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // State
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 const files = [];
 let processing = false;
 let _cmpId = 0;
@@ -768,9 +1131,13 @@ let _t0   = 0;
 let _done = 0;
 let _total = 0;
 
-// ─────────────────────────────────────────────────────────────────────
-// Color picker sync
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// UI sync
+// ═══════════════════════════════════════════════════════════════════
+function toggleRowState(rowId, active) {
+  $(rowId).classList.toggle('active', active);
+}
+
 function syncColor(source) {
   const colorEl = $('bgColor');
   const hexEl   = $('bgHex');
@@ -787,33 +1154,28 @@ function syncColor(source) {
 }
 function toggleBgRow(on) { $('bgRow').style.display = on ? 'flex' : 'none'; }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Server health check
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 async function checkHealth() {
   const url = $('srvUrl').value.trim().replace(/\/$/, '');
   const b = $('badge');
+  const txt = b.querySelector('span:last-child');
   try {
     const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
-    if (r.ok) {
-      b.textContent = 'Online';
-      b.className = 'ok';
-    } else {
-      b.textContent = 'Error';
-      b.className = 'err';
-    }
+    if (r.ok) { txt.textContent = 'Online';  b.className = 'ok'; }
+    else      { txt.textContent = 'Error';   b.className = 'err'; }
   } catch {
-    b.textContent = 'Offline';
-    b.className = 'err';
+    txt.textContent = 'Offline'; b.className = 'err';
   }
 }
 checkHealth();
 setInterval(checkHealth, 10000);
 $('srvUrl').addEventListener('change', checkHealth);
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // File management
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 function addFiles(newFiles) {
   let added = 0;
   newFiles.filter(f => f.type.startsWith('image/')).forEach(f => {
@@ -824,7 +1186,7 @@ function addFiles(newFiles) {
   });
   renderChips();
   $('btnProcess').disabled = !files.length || processing;
-  if (added) toast(`Added ${added} image${added > 1 ? 's' : ''}`, 'ok', 1800);
+  if (added) toast(`Added ${added} image${added > 1 ? 's' : ''}`, 'ok', 1600);
 }
 
 function removeFile(i) {
@@ -853,18 +1215,23 @@ function handleDrop(e) {
   addFiles([...e.dataTransfer.files]);
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Live timer
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// LIVE TIMER — actually works now!
+// ═══════════════════════════════════════════════════════════════════
 function startLive(total) {
   _t0 = Date.now();
   _done = 0;
   _total = total;
   $('liveBlock').classList.add('show');
-  $('tcStatus').textContent = 'Processing…';
-  $('tcStatus').style.color = '';
+  $('tcStatus').textContent = 'Working';
+  $('tcStatus').classList.remove('green');
+  $('tcEta').textContent = '—';
+  $('tcAvg').textContent = '—';
   updatePct(0, total);
+
+  if (_tick) clearInterval(_tick);
   _tick = setInterval(_tickFn, 100);
+  _tickFn(); // run once immediately
 }
 
 function _tickFn() {
@@ -876,11 +1243,19 @@ function _tickFn() {
     const eta = avg * (_total - _done);
     $('tcEta').textContent = Math.ceil(eta) + 's';
     $('tcAvg').textContent = avg.toFixed(1) + 's';
+  } else if (_done === 0 && _total > 0) {
+    // Estimate ETA based on quality tier
+    const tier = $('quality').value;
+    const perFileEst = { fast: 1.2, balanced: 2.5, premium: 4.5, ultra: 8, portrait: 6 }[tier] || 4;
+    const est = perFileEst * _total;
+    $('tcEta').textContent = '~' + Math.max(1, Math.ceil(est - elapsed)) + 's';
+    $('tcAvg').textContent = '~' + perFileEst.toFixed(1) + 's';
   } else if (_done >= _total && _total > 0) {
     $('tcEta').textContent = '—';
     $('tcAvg').textContent = (elapsed / _total).toFixed(1) + 's';
   }
 
+  // Update per-card timers
   for (const [id, t0] of Object.entries(_fileTimes)) {
     const el = $('pt-' + id);
     if (el) el.textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
@@ -891,8 +1266,8 @@ function tickDone(n) {
   _done = n;
   updatePct(n, _total);
   if (n >= _total) {
-    $('tcStatus').textContent = '✓ Complete';
-    $('tcStatus').style.color = 'var(--successH)';
+    $('tcStatus').textContent = 'Complete';
+    $('tcStatus').classList.add('green');
     $('tcEta').textContent = '—';
   }
 }
@@ -909,14 +1284,14 @@ function stopLive() {
   _tick = null;
   setTimeout(() => {
     $('liveBlock').classList.remove('show');
-    $('tcStatus').textContent = 'Processing…';
-    $('tcStatus').style.color = '';
+    $('tcStatus').textContent = 'Working';
+    $('tcStatus').classList.remove('green');
   }, 5000);
 }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Process batch
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 async function startProcessing() {
   if (!files.length || processing) return;
   processing = true;
@@ -948,7 +1323,7 @@ async function startProcessing() {
   let done = 0;
   await Promise.allSettled(batch.map(async (file, idx) => {
     const id = cards[idx];
-    setPendingStatus(id, 'Uploading & processing…');
+    setPendingStatus(id, 'Processing…');
     const res = await processOne(file, server, apiKey, quality, enhance, bgColor);
     delete _fileTimes[id];
     done++;
@@ -961,14 +1336,13 @@ async function startProcessing() {
   btn.classList.remove('loading');
   stopLive();
 
-  // Success summary toast
   const okCount = $('results').querySelectorAll('.card').length;
-  if (okCount > 0) toast(`✓ Processed ${okCount} image${okCount > 1 ? 's' : ''}`, 'ok');
+  if (okCount > 0) toast(`Successfully processed ${okCount} image${okCount > 1 ? 's' : ''}`, 'ok');
 }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Process single image
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 async function processOne(file, server, apiKey, quality, enhance, bgColor) {
   const fd = new FormData();
   fd.append('file', file);
@@ -987,14 +1361,13 @@ async function processOne(file, server, apiKey, quality, enhance, bgColor) {
         const j = await r.json();
         if (j.detail) detail = j.detail;
       } catch {}
-      return { ok: false, file, error: `HTTP ${r.status}: ${detail}` };
+      return { ok: false, file, error: `HTTP ${r.status} — ${detail}` };
     }
 
     const blob = await r.blob();
     const blobUrl = URL.createObjectURL(blob);
     const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
 
-    // Try to read backend dimensions, fall back to local read
     let w = r.headers.get('X-Image-Width');
     let h = r.headers.get('X-Image-Height');
     if (!w || !h || w === '?' || h === '?') {
@@ -1010,7 +1383,7 @@ async function processOne(file, server, apiKey, quality, enhance, bgColor) {
       blobUrl,
       origUrl: URL.createObjectURL(file),
       w, h,
-      model: r.headers.get('X-Model')        || 'unknown',
+      model: r.headers.get('X-Model')        || 'auto',
       ms:    r.headers.get('X-Process-Time') || elapsed,
       name:  file.name.replace(/\.[^.]+$/, '') + '_no_bg.png',
     };
@@ -1028,9 +1401,9 @@ function getImageDims(url) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Pending card
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 function renderPendingCard(file, id) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -1043,7 +1416,7 @@ function renderPendingCard(file, id) {
     <div class="pending-body">
       <div class="pend-spin"></div>
       <div class="pend-info">
-        <div class="pend-status" id="ps-${id}">Queued…</div>
+        <div class="pend-status" id="ps-${id}">Queued</div>
         <div class="pend-timer">Elapsed: <b id="pt-${id}">0.0s</b></div>
       </div>
     </div>`;
@@ -1055,19 +1428,19 @@ function setPendingStatus(id, txt) {
   if (el) el.textContent = txt;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Replace pending card with result or error
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// Replace pending → result/error
+// ═══════════════════════════════════════════════════════════════════
 function replaceCard(id, res, ctx) {
   const card = $('card-' + id);
   if (!card) return;
 
   if (!res.ok) {
     card.outerHTML = `
-      <div class="err-card" style="animation:fadeUp .3s ease">
-        <span class="err-card-icon">⚠️</span>
-        <div class="err-card-body">
-          <strong>${esc(res.file.name)}</strong><br>
+      <div class="err-card">
+        <div class="err-icon-wrap">${ICONS.alert}</div>
+        <div class="err-body">
+          <strong>${esc(res.file.name)}</strong>
           ${esc(res.error)}
         </div>
       </div>`;
@@ -1075,21 +1448,17 @@ function replaceCard(id, res, ctx) {
   }
 
   card.innerHTML = buildResultHTML(res, id, ctx);
-
-  // After insertion, set comparison wrap height & initialize slider
-  requestAnimationFrame(() => setupCmp(id));
+  requestAnimationFrame(() => setupCmp(id, ctx));
 }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Build result card HTML
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 function buildResultHTML(res, id, ctx) {
   const enhanceTag = ctx.enhance
-    ? `<span class="tag" style="background:rgba(245,158,11,.15);color:#fcd34d">✨ Enhanced</span>` : '';
+    ? `<span class="tag warm">${ICONS.sparkle} Enhanced</span>` : '';
   const bgTag = ctx.hasBg
-    ? `<span class="tag dim">🎨 BG Replaced</span>` : '';
-
-  const rightLabel = ctx.hasBg ? 'New Background' : 'Transparent';
+    ? `<span class="tag cool">BG Replaced</span>` : '';
 
   return `
     <div class="card-head">
@@ -1097,20 +1466,27 @@ function buildResultHTML(res, id, ctx) {
       ${enhanceTag}
       ${bgTag}
       <span class="tag dim">${esc(res.model)}</span>
-      <span class="tag ok">✓ Done</span>
+      <span class="tag ok">${ICONS.check} Done</span>
     </div>
 
     <div class="cmp-labels">
-      <span>← Result</span>
-      <span class="ml">⇔ Drag to compare</span>
-      <span>Original →</span>
+      <span class="side">${ICONS.arrowL} Result ${ctx.hasBg ? '(new BG)' : '(transparent)'}</span>
+      <span class="ml">${ICONS.drag} Drag to compare</span>
+      <span class="side">Original ${ICONS.arrowR}</span>
     </div>
 
     <div class="cmp-wrap" id="wrap-${id}">
-      <img class="orig" id="orig-${id}" src="${res.origUrl}" alt="original" draggable="false">
-      <img class="res"  id="res-${id}"  src="${res.blobUrl}" alt="result"   draggable="false">
+      <!-- RESULT side (base, full-width, checkerboard) -->
+      <div class="cmp-side-res ${ctx.hasBg ? 'no-checker' : ''}" id="resSide-${id}">
+        <img class="cmp-img res" id="resImg-${id}" src="${res.blobUrl}" alt="result" draggable="false">
+      </div>
+      <!-- ORIGINAL side (overlay, width controlled) -->
+      <div class="cmp-side-orig" id="origSide-${id}">
+        <img class="cmp-img orig" id="origImg-${id}" src="${res.origUrl}" alt="original" draggable="false">
+      </div>
+
       <div class="cmp-line"   id="line-${id}"></div>
-      <div class="cmp-handle" id="hdl-${id}">⇔</div>
+      <div class="cmp-handle" id="hdl-${id}">${ICONS.drag}</div>
       <div class="cmp-target" id="tgt-${id}"></div>
     </div>
 
@@ -1131,67 +1507,109 @@ function buildResultHTML(res, id, ctx) {
 
     <div class="card-foot">
       <div class="stats">
-        <span class="stat">📐 <b>${esc(res.w)} × ${esc(res.h)}</b> px</span>
-        <span class="stat">⏱ <b>${esc(res.ms)}s</b></span>
-        ${ctx.enhance ? '<span class="stat enhanced">✨ Studio Enhanced</span>' : ''}
+        <span class="stat">${ICONS.ruler}<b>${esc(res.w)} × ${esc(res.h)}</b> px</span>
+        <span class="stat">${ICONS.clock}<b>${esc(res.ms)}s</b></span>
+        ${ctx.enhance ? `<span class="stat enhanced">${ICONS.sparkle} Studio Enhanced</span>` : ''}
       </div>
       <button class="btn-dl" onclick="dlFile('${res.blobUrl}','${esc(res.name)}')">
-        ⬇ Download PNG
+        ${ICONS.download} Download PNG
       </button>
     </div>`;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// COMPARISON SLIDER — fixed & robust
+// ═══════════════════════════════════════════════════════════════════
+// COMPARISON SLIDER — FINAL WORKING VERSION
 //
-// We set the comparison wrap to a fixed height based on the actual rendered
-// image aspect ratio, capped at 600px. Both images use absolute positioning
-// with object-fit: contain so they ALIGN PERFECTLY.
+// CRITICAL DESIGN:
+// - We have TWO container panels stacked over each other:
+//   1. cmp-side-res  — full width, with checkerboard BG, holds RESULT img
+//   2. cmp-side-orig — anchored RIGHT, width adjustable, holds ORIGINAL img
 //
-// clip-path: inset(top right bottom left) — we clip from the RIGHT side
-// of the result image, so result is visible on the LEFT of the divider.
-// ─────────────────────────────────────────────────────────────────────
-function setupCmp(id) {
-  const wrap   = $('wrap-' + id);
-  const origImg = $('orig-' + id);
-  const resImg  = $('res-'  + id);
-  const line    = $('line-' + id);
-  const handle  = $('hdl-'  + id);
-  const target  = $('tgt-'  + id);
-  if (!wrap || !origImg || !resImg) return;
+// - The result image (cmp-img.res) is sized to the FULL wrap width and
+//   anchored to the LEFT of the result panel. Since result panel = full width,
+//   it shows at proper aspect on the LEFT.
+//
+// - The original image (cmp-img.orig) is also sized to the FULL wrap width
+//   but anchored to the RIGHT of the original panel. As the original panel
+//   shrinks (drag right), the image stays anchored right → only its left
+//   portion gets clipped, perfectly matching what's beneath.
+//
+// - Both images use the EXACT SAME dimensions, so the boundary aligns 100%.
+// ═══════════════════════════════════════════════════════════════════
+function setupCmp(id, ctx) {
+  const wrap     = $('wrap-' + id);
+  const resSide  = $('resSide-' + id);
+  const origSide = $('origSide-' + id);
+  const resImg   = $('resImg-' + id);
+  const origImg  = $('origImg-' + id);
+  const line     = $('line-' + id);
+  const handle   = $('hdl-'  + id);
+  const target   = $('tgt-'  + id);
+  if (!wrap) return;
 
-  // Set the wrap height based on the image's natural aspect ratio
-  function sizeWrap() {
-    const img = origImg.complete && origImg.naturalWidth ? origImg : resImg;
-    if (!img.naturalWidth) return;
+  // Calculate proper aspect-fit dimensions for the wrap, and size both
+  // images to match exactly.
+  function sizeImages() {
+    const baseImg = origImg.complete && origImg.naturalWidth ? origImg
+                  : (resImg.complete && resImg.naturalWidth ? resImg : null);
+    if (!baseImg) return;
 
-    const wrapWidth = wrap.clientWidth;
-    const aspectH = (img.naturalHeight / img.naturalWidth) * wrapWidth;
-    const finalH = Math.min(Math.max(aspectH, 280), 640);
-    wrap.style.height = finalH + 'px';
+    const wrapW   = wrap.clientWidth;
+    const natW    = baseImg.naturalWidth;
+    const natH    = baseImg.naturalHeight;
+    const aspect  = natH / natW;
+
+    // Calculate height (cap at 640, min 280)
+    const fitH = Math.min(Math.max(wrapW * aspect, 280), 640);
+    // Calculate the actual image width at that height (object-fit:contain style)
+    const fitW = fitH / aspect;
+    const actualW = Math.min(fitW, wrapW);
+    const actualH = actualW * aspect;
+
+    wrap.style.height = actualH + 'px';
+
+    // Size BOTH images to the full wrap width (actualW)
+    // and center them horizontally
+    const leftOffset = (wrapW - actualW) / 2;
+
+    [resImg, origImg].forEach(img => {
+      img.style.width  = actualW + 'px';
+      img.style.height = actualH + 'px';
+      img.style.objectFit = 'contain';
+    });
+
+    // Result image: anchored to LEFT of its container (which is full width)
+    // It needs to start at leftOffset from the LEFT of the wrap
+    resImg.style.left = leftOffset + 'px';
+    resImg.style.right = 'auto';
+
+    // Original image: anchored to RIGHT of its container (which is right-aligned)
+    // It needs to start at leftOffset from the RIGHT of the wrap
+    origImg.style.right = leftOffset + 'px';
+    origImg.style.left = 'auto';
   }
 
-  if (origImg.complete && origImg.naturalWidth) sizeWrap();
-  else origImg.addEventListener('load', sizeWrap, { once: true });
-
-  if (resImg.complete && resImg.naturalWidth) {
-    // also re-size after result loads
-    sizeWrap();
-  } else {
-    resImg.addEventListener('load', sizeWrap, { once: true });
+  let imgsLoaded = 0;
+  function onImgLoad() {
+    imgsLoaded++;
+    if (imgsLoaded >= 1) sizeImages(); // Size as soon as one loads
   }
+  if (origImg.complete && origImg.naturalWidth) onImgLoad();
+  else origImg.addEventListener('load', onImgLoad, { once: true });
+  if (resImg.complete && resImg.naturalWidth) onImgLoad();
+  else resImg.addEventListener('load', onImgLoad, { once: true });
 
   // Re-size on window resize
-  const resizeObs = new ResizeObserver(sizeWrap);
-  resizeObs.observe(wrap);
+  const ro = new ResizeObserver(sizeImages);
+  ro.observe(wrap);
 
   let drag = false;
 
   function setPct(pct) {
     pct = Math.max(2, Math.min(98, pct));
-    // Show RESULT on the LEFT side of the divider:
-    // clip RIGHT (100-pct)% of the result → leaves left pct% visible
-    resImg.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    // Result is on LEFT, Original is on RIGHT
+    // Original side width = (100 - pct)% — as user drags right, original shrinks
+    origSide.style.width = (100 - pct) + '%';
     line.style.left   = pct + '%';
     handle.style.left = pct + '%';
   }
@@ -1201,10 +1619,9 @@ function setupCmp(id) {
     setPct(((clientX - r.left) / r.width) * 100);
   }
 
-  // Pointer events handle mouse, touch, and pen uniformly
   target.addEventListener('pointerdown', e => {
     drag = true;
-    target.setPointerCapture(e.pointerId);
+    try { target.setPointerCapture(e.pointerId); } catch {}
     moveFromEvent(e.clientX);
   });
   target.addEventListener('pointermove', e => {
@@ -1216,13 +1633,12 @@ function setupCmp(id) {
   });
   target.addEventListener('pointercancel', () => { drag = false; });
 
-  // Initial position
   setPct(50);
 }
 
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // Download
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 function dlFile(url, name) {
   const a = document.createElement('a');
   a.href = url;
@@ -1230,12 +1646,12 @@ function dlFile(url, name) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  toast(`Downloaded ${name}`, 'ok', 2000);
+  toast(`Downloaded ${name}`, 'ok', 1800);
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Keyboard shortcut: Ctrl/Cmd + Enter to process
-// ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// Keyboard shortcuts
+// ═══════════════════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
@@ -1243,7 +1659,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Paste images directly from clipboard
 document.addEventListener('paste', e => {
   const items = [...(e.clipboardData?.items || [])];
   const imgs = items
