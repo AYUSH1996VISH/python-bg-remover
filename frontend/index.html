@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BG Remover Pro</title>
+<meta name="description" content="Studio-grade AI background removal — upload, process, download.">
+<style>
+/* ── reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0f1117;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+input, select, button { font-family: inherit; font-size: inherit; }
+img { display: block; }
+
+:root {
+  --accent:  #6366f1;
+  --accentH: #818cf8;
+  --success: #22c55e;
+  --danger:  #ef4444;
+  --surf:    #1e2130;
+  --surf2:   #252a3a;
+  --border:  #2d3348;
+  --dim:     #94a3b8;
+  --r:       12px;
+}
+
+/* ── layout ─────────────────────────────────────────────────────────── */
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 840px) { .wrap { grid-template-columns: 1fr; } }
+
+/* ── header ─────────────────────────────────────────────────────────── */
+header {
+  grid-column: 1/-1;
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-size: 1.6rem; }
+header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
+header p  { font-size: .8rem; color: var(--dim); margin-top: 2px; }
+#badge {
+  margin-left: auto;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: .72rem; font-weight: 600;
+  background: rgba(99,102,241,.15); color: var(--accentH);
+  border: 1px solid rgba(99,102,241,.3);
+  white-space: nowrap;
+  transition: background .3s, color .3s, border-color .3s;
+}
+#badge.ok  { background: rgba(34,197,94,.12);  color: #4ade80; border-color: rgba(34,197,94,.3); }
+#badge.err { background: rgba(239,68,68,.1);   color: #fca5a5; border-color: rgba(239,68,68,.3); }
+
+/* ── settings panel ─────────────────────────────────────────────────── */
+.panel {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  position: sticky; top: 16px;
+}
+.section-title {
+  font-size: .68rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--dim);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+label { display: block; font-size: .8rem; color: var(--dim); margin-bottom: 5px; }
+input[type=text], input[type=password], select {
+  width: 100%;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 8px; color: #e2e8f0;
+  padding: 8px 12px; outline: none;
+  transition: border-color .15s;
+}
+input:focus, select:focus { border-color: var(--accent); }
+select { cursor: pointer; }
+select option { background: #1a1e2e; }
+
+/* toggles */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.toggle-row .lbl { font-size: .82rem; color: #cbd5e1; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.knob {
+  position: absolute; inset: 0;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 11px; cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.knob::before {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; background: #94a3b8;
+  border-radius: 50%; top: 2px; left: 2px;
+  transition: transform .2s, background .2s;
+}
+.toggle input:checked ~ .knob { background: var(--accent); border-color: var(--accent); }
+.toggle input:checked ~ .knob::before { transform: translateX(18px); background: #fff; }
+
+/* color row */
+.color-row { display: flex; gap: 8px; align-items: center; }
+.color-swatch {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid var(--border); overflow: hidden;
+  flex-shrink: 0; cursor: pointer;
+}
+.color-swatch input[type=color] {
+  width: 200%; height: 200%; margin: -50% 0 0 -50%;
+  border: none; padding: 0; cursor: pointer;
+}
+.color-row input[type=text] { flex: 1; }
+
+/* process button */
+#btnProcess {
+  width: 100%; background: var(--accent); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 11px 16px; font-size: .9rem; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .15s, opacity .15s;
+}
+#btnProcess:hover:not(:disabled) { background: var(--accentH); }
+#btnProcess:disabled { opacity: .45; cursor: not-allowed; }
+.spin {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite; display: none;
+}
+.loading .spin  { display: block; }
+.loading .btext { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── live progress block ─────────────────────────────────────────────── */
+.live-prog {
+  display: none;
+  flex-direction: column; gap: 8px;
+}
+.live-prog.show { display: flex; }
+
+.prog-bar-bg {
+  height: 6px; background: var(--surf2); border-radius: 3px; overflow: hidden;
+}
+.prog-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width .25s; }
+
+.timer-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.timer-cell {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px;
+}
+.timer-cell .tc-label { font-size: .65rem; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.timer-cell .tc-val   { font-size: 1rem; font-weight: 700; color: #c7d2fe; margin-top: 2px; }
+.timer-cell .tc-val.green { color: #4ade80; }
+
+/* ── main area ──────────────────────────────────────────────────────── */
+main { display: flex; flex-direction: column; gap: 20px; }
+
+/* drop zone */
+.drop {
+  background: var(--surf); border: 2px dashed var(--border);
+  border-radius: var(--r);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; min-height: 190px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+  text-align: center; padding: 28px 20px;
+}
+.drop.over { border-color: var(--accent); background: rgba(99,102,241,.06); }
+.drop.has  { border-style: solid; border-color: var(--accent); min-height: 110px; }
+.drop-icon { font-size: 2.2rem; }
+.drop h3   { font-size: .95rem; font-weight: 600; }
+.drop p    { font-size: .77rem; color: var(--dim); }
+#fileInput { display: none; }
+
+/* file chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; justify-content: center; margin-top: 6px; }
+.chip {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px; font-size: .73rem;
+  display: flex; align-items: center; gap: 6px;
+}
+.chip button {
+  background: none; border: none; color: var(--dim);
+  cursor: pointer; font-size: .9rem; padding: 0 2px; line-height: 1;
+}
+.chip button:hover { color: var(--danger); }
+
+/* ── result cards ───────────────────────────────────────────────────── */
+.results { display: flex; flex-direction: column; gap: 16px; }
+
+.card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  animation: fadeUp .3s ease;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.card-head {
+  padding: 11px 16px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border); font-size: .8rem;
+}
+.card-head .fname { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag {
+  padding: 2px 8px; border-radius: 10px; font-size: .68rem; font-weight: 700;
+  background: rgba(99,102,241,.15); color: var(--accentH);
+  display: flex; align-items: center; gap: 4px;
+}
+.tag.ok   { background: rgba(34,197,94,.12); color: #4ade80; }
+.tag.dim  { background: var(--surf2); color: var(--dim); }
+.tag.spin-tag { background: rgba(99,102,241,.12); color: var(--accentH); }
+.tag-spin {
+  width: 10px; height: 10px;
+  border: 1.5px solid rgba(129,140,248,.3); border-top-color: var(--accentH);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+
+/* pending card body */
+.pending-body {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px; padding: 36px 24px; min-height: 140px;
+}
+.pend-spin {
+  width: 36px; height: 36px; flex-shrink: 0;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+.pend-info { display: flex; flex-direction: column; gap: 5px; }
+.pend-status { font-size: .88rem; color: #e2e8f0; }
+.pend-timer  { font-size: .78rem; color: var(--dim); }
+.pend-timer b { color: #c7d2fe; }
+
+/* ── comparison slider ──────────────────────────────────────────────── */
+/*
+  Layout:
+    .cmp-wrap (relative, checkerboard)
+      img.orig   — in-flow, sets the height
+      img.res    — absolute inset:0, clip-path clips LEFT side,
+                   revealing result on the RIGHT as pct increases
+      .cmp-line  — divider bar (absolute)
+      .cmp-handle — knob (absolute)
+      .cmp-target — full-area drag surface (absolute z=20)
+
+  clip-path: inset(0 0 0 X%) hides the left X%, shows the right (100-X)%.
+  At pct=50:  inset(0 0 0 50%) → original on LEFT, result on RIGHT ✓
+  At pct=0:   inset(0 0 0 100%) → only original visible
+  At pct=100: inset(0 0 0 0%)   → only result visible
+*/
+.cmp-wrap {
+  position: relative;
+  background:
+    repeating-conic-gradient(#1a1e2e 0% 25%, #252a3a 0% 50%)
+    0 0 / 22px 22px;
+  overflow: hidden;
+  cursor: ew-resize;
+}
+.cmp-wrap img.orig {
+  width: 100%; max-height: 520px; object-fit: contain;
+}
+.cmp-wrap img.res {
+  position: absolute; inset: 0;
+  width: 100%; max-height: 520px; object-fit: contain;
+  /* Start at 50%: show result on RIGHT half */
+  clip-path: inset(0 0 0 50%);
+}
+.cmp-line {
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 2px; background: rgba(255,255,255,.9);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.cmp-handle {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 14px rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; font-weight: 700; color: #333;
+  pointer-events: none; z-index: 15;
+  user-select: none;
+}
+.cmp-target {
+  position: absolute; inset: 0;
+  z-index: 20; cursor: ew-resize;
+}
+
+.cmp-labels {
+  display: flex; justify-content: space-between;
+  padding: 5px 14px; font-size: .7rem; color: var(--dim);
+  border-bottom: 1px solid var(--border);
+}
+
+/* result-only view (below comparison) */
+.result-view {
+  display: flex; gap: 0;
+  border-top: 1px solid var(--border);
+}
+.result-half {
+  flex: 1; overflow: hidden;
+  background: repeating-conic-gradient(#1a1e2e 0% 25%, #252a3a 0% 50%) 0 0 / 16px 16px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  border-right: 1px solid var(--border);
+}
+.result-half:last-child { border-right: none; }
+.result-half img { max-width: 100%; max-height: 200px; object-fit: contain; }
+.result-half-label {
+  font-size: .65rem; text-align: center; color: var(--dim);
+  padding: 4px 0 10px; text-transform: uppercase; letter-spacing: .06em;
+}
+
+/* card footer */
+.card-foot {
+  padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+}
+.stats { display: flex; gap: 14px; flex-wrap: wrap; }
+.stat  { font-size: .74rem; color: var(--dim); }
+.stat b { color: #c7d2fe; }
+
+.btn-dl {
+  background: var(--success); color: #fff; border: none;
+  border-radius: 8px; padding: 8px 20px;
+  font-size: .82rem; font-weight: 600;
+  cursor: pointer; transition: opacity .15s;
+}
+.btn-dl:hover { opacity: .85; }
+
+/* error */
+.err-card {
+  background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.28);
+  border-radius: var(--r); padding: 14px 18px;
+  font-size: .84rem; color: #fca5a5;
+  animation: fadeUp .25s ease;
+}
+
+/* ── toast ──────────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px 18px; font-size: .83rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,.45);
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none; z-index: 9999;
+}
+#toast.show     { opacity: 1; transform: none; }
+#toast.ok  { border-color: var(--success); color: #4ade80; }
+#toast.err { border-color: var(--danger);  color: #fca5a5; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="logo">✂️</span>
+    <div>
+      <h1>BG Remover Pro</h1>
+      <p>Studio-grade AI background removal — BiRefNet + guided-filter refinement</p>
+    </div>
+    <span id="badge">● Connecting…</span>
+  </header>
+
+  <!-- Settings panel -->
+  <aside class="panel">
+    <div class="section-title">Connection</div>
+    <div>
+      <label for="srvUrl">API Server URL</label>
+      <input type="text" id="srvUrl" value="http://127.0.0.1:8000" placeholder="http://localhost:8000">
+    </div>
+    <div>
+      <label for="apiKey">API Key <small style="color:var(--dim)">(blank = no auth)</small></label>
+      <input type="password" id="apiKey" placeholder="sk-…" autocomplete="off">
+    </div>
+
+    <div class="section-title">Processing</div>
+    <div>
+      <label for="quality">Quality Tier</label>
+      <select id="quality">
+        <option value="fast">⚡ Fast — silueta @ 512px</option>
+        <option value="balanced">⚖️ Balanced — u2net @ 768px</option>
+        <option value="premium" selected>🏆 Premium — BiRefNet @ 1024px</option>
+        <option value="ultra">💎 Ultra — BiRefNet @ 1280px + matting</option>
+        <option value="portrait">👤 Portrait — tuned for people &amp; hair</option>
+      </select>
+    </div>
+
+    <div class="toggle-row">
+      <span class="lbl">Studio Enhancement</span>
+      <label class="toggle"><input type="checkbox" id="enhance"><span class="knob"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="lbl">Replace Background</span>
+      <label class="toggle"><input type="checkbox" id="useBg" onchange="toggleBgRow(this.checked)"><span class="knob"></span></label>
+    </div>
+    <div class="color-row" id="bgRow" style="display:none">
+      <div class="color-swatch">
+        <input type="color" id="bgColor" value="#ffffff" oninput="$('bgHex').value=this.value">
+      </div>
+      <input type="text" id="bgHex" value="#ffffff"
+        oninput="if(/^#[0-9a-f]{6}$/i.test(this.value))$('bgColor').value=this.value">
+    </div>
+
+    <button id="btnProcess" disabled onclick="startProcessing()">
+      <div class="spin"></div>
+      <span class="btext">🚀 Remove Background</span>
+    </button>
+
+    <!-- Live progress + timer (shown only while processing) -->
+    <div class="live-prog" id="liveBlock">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:.76rem;color:var(--dim)">
+        <span id="progLabel">0 / 0 files</span>
+        <span id="progPct" style="font-weight:700;color:#c7d2fe">0%</span>
+      </div>
+      <div class="prog-bar-bg"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+
+      <div class="timer-grid">
+        <div class="timer-cell">
+          <div class="tc-label">Elapsed</div>
+          <div class="tc-val" id="tcElapsed">0.0s</div>
+        </div>
+        <div class="timer-cell">
+          <div class="tc-label">Est. remaining</div>
+          <div class="tc-val" id="tcEta">—</div>
+        </div>
+        <div class="timer-cell">
+          <div class="tc-label">Avg / file</div>
+          <div class="tc-val" id="tcAvg">—</div>
+        </div>
+        <div class="timer-cell">
+          <div class="tc-label">Status</div>
+          <div class="tc-val" id="tcStatus">Processing…</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main>
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload images"
+         onclick="if(event.target.tagName!=='BUTTON')$('fileInput').click()"
+         onkeydown="if(event.key==='Enter'||event.key===' ')$('fileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('over')"
+         ondragleave="this.classList.remove('over')"
+         ondrop="handleDrop(event)">
+      <input type="file" id="fileInput" multiple accept="image/*"
+             onchange="addFiles([...this.files]);this.value=''">
+      <span class="drop-icon">📂</span>
+      <h3>Drop images here or click to upload</h3>
+      <p>JPG · PNG · WebP · BMP — up to 25 MB each · batch supported</p>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="results" id="results"></div>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── helpers ────────────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+let _toastT;
+function toast(msg, type='ok', ms=3200) {
+  const el = $('toast');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── state ──────────────────────────────────────────────────────────────
+const files = [];
+
+// ── server health ──────────────────────────────────────────────────────
+async function checkHealth() {
+  const url = $('srvUrl').value.trim().replace(/\/$/, '');
+  const b = $('badge');
+  try {
+    const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
+    b.textContent = r.ok ? '● Online' : '● Error';
+    b.className   = r.ok ? 'ok' : 'err';
+  } catch {
+    b.textContent = '● Offline'; b.className = 'err';
+  }
+}
+checkHealth();
+setInterval(checkHealth, 8000);
+$('srvUrl').addEventListener('change', checkHealth);
+
+// ── file management ────────────────────────────────────────────────────
+function addFiles(newFiles) {
+  newFiles.filter(f => f.type.startsWith('image/')).forEach(f => {
+    if (!files.find(x => x.name === f.name && x.size === f.size)) files.push(f);
+  });
+  renderChips();
+  $('btnProcess').disabled = !files.length;
+}
+function removeFile(i) {
+  files.splice(i, 1); renderChips();
+  $('btnProcess').disabled = !files.length;
+}
+function renderChips() {
+  const chips = $('chips');
+  chips.innerHTML = '';
+  $('drop').classList.toggle('has', files.length > 0);
+  files.forEach((f, i) => {
+    const c = document.createElement('div'); c.className = 'chip';
+    c.innerHTML = `<span>${esc(f.name)}</span>
+      <button onclick="event.stopPropagation();removeFile(${i})">×</button>`;
+    chips.appendChild(c);
+  });
+}
+function handleDrop(e) {
+  e.preventDefault(); $('drop').classList.remove('over');
+  addFiles([...e.dataTransfer.files]);
+}
+function toggleBgRow(on) { $('bgRow').style.display = on ? 'flex' : 'none'; }
+
+// ── live timer ─────────────────────────────────────────────────────────
+let _tick = null;
+let _t0   = 0;
+let _done = 0;
+let _total = 0;
+const _fileTimes = {};   // cardId → start timestamp
+
+function startLive(total) {
+  _t0 = Date.now(); _done = 0; _total = total;
+  $('liveBlock').classList.add('show');
+  updatePct(0, total);
+  _tick = setInterval(_tickFn, 100);
+}
+
+function _tickFn() {
+  const elapsed = (Date.now() - _t0) / 1000;
+
+  // Global cells
+  $('tcElapsed').textContent = elapsed.toFixed(1) + 's';
+  if (_done > 0 && _done < _total) {
+    const avg = elapsed / _done;
+    const eta = avg * (_total - _done);
+    $('tcEta').textContent = Math.ceil(eta) + 's';
+    $('tcAvg').textContent = avg.toFixed(1) + 's';
+  } else if (_done >= _total) {
+    $('tcEta').textContent = '—';
+    $('tcAvg').textContent = (_total > 0 ? (elapsed / _total).toFixed(1) : '—') + 's';
+  }
+
+  // Per-pending-card timers
+  for (const [id, t0] of Object.entries(_fileTimes)) {
+    const el = $('pt-' + id);
+    if (el) el.textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
+  }
+}
+
+function tickDone(n) {
+  _done = n;
+  updatePct(n, _total);
+  if (n >= _total) {
+    $('tcStatus').textContent = '✓ Done';
+    $('tcStatus').style.color = '#4ade80';
+    $('tcEta').textContent = '—';
+  }
+}
+
+function updatePct(done, total) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  $('progBar').style.width   = pct + '%';
+  $('progPct').textContent   = pct + '%';
+  $('progLabel').textContent = `${done} / ${total} file${total !== 1 ? 's' : ''}`;
+}
+
+function stopLive() {
+  clearInterval(_tick); _tick = null;
+  // Leave the block visible showing final totals; hide after 4s
+  setTimeout(() => {
+    $('liveBlock').classList.remove('show');
+    $('tcStatus').textContent = 'Processing…';
+    $('tcStatus').style.color = '';
+  }, 4000);
+}
+
+// ── processing ─────────────────────────────────────────────────────────
+let processing = false;
+let _cmpId = 0;
+
+async function startProcessing() {
+  if (!files.length || processing) return;
+  processing = true;
+  const btn = $('btnProcess');
+  btn.disabled = true; btn.classList.add('loading');
+  $('results').innerHTML = '';
+
+  const server  = $('srvUrl').value.trim().replace(/\/$/, '');
+  const apiKey  = $('apiKey').value.trim();
+  const quality = $('quality').value;
+  const enhance = $('enhance').checked;
+  const bgColor = $('useBg').checked ? $('bgHex').value.trim() : null;
+  const total   = files.length;
+
+  startLive(total);
+
+  // Capture current file list (snapshot) so removals mid-run don't affect us
+  const batch = files.slice();
+  const cards = [];
+
+  // Create pending placeholder cards first (so user sees all jobs)
+  batch.forEach((file, idx) => {
+    const id = 'c' + (_cmpId++);
+    cards.push(id);
+    _fileTimes[id] = Date.now();
+    renderPendingCard(file, id);
+  });
+
+  let done = 0;
+  await Promise.allSettled(batch.map(async (file, idx) => {
+    const id = cards[idx];
+    setPendingStatus(id, 'Processing…');
+    const res = await processOne(file, server, apiKey, quality, enhance, bgColor);
+    delete _fileTimes[id];
+    done++;
+    tickDone(done);
+    replaceCard(id, res);
+  }));
+
+  processing = false;
+  btn.disabled = false; btn.classList.remove('loading');
+  stopLive();
+}
+
+async function processOne(file, server, apiKey, quality, enhance, bgColor) {
+  const fd = new FormData(); fd.append('file', file);
+  const p  = new URLSearchParams({ quality, enhance: enhance ? 'true' : 'false' });
+  if (bgColor) p.set('bg_color', bgColor);
+  const headers = apiKey ? { 'X-API-Key': apiKey } : {};
+  const t0 = Date.now();
+
+  try {
+    const r = await fetch(`${server}/remove-bg?${p}`, { method: 'POST', headers, body: fd });
+    if (!r.ok) {
+      const d = await r.json().then(j => j.detail || r.statusText).catch(() => r.statusText);
+      return { ok: false, file, error: `HTTP ${r.status}: ${d}` };
+    }
+    const blob    = await r.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+    return {
+      ok: true, file, blobUrl,
+      origUrl: URL.createObjectURL(file),
+      w:     r.headers.get('X-Image-Width')  || '?',
+      h:     r.headers.get('X-Image-Height') || '?',
+      model: r.headers.get('X-Model')        || '?',
+      ms:    r.headers.get('X-Process-Time') || elapsed,
+      name:  file.name.replace(/\.[^.]+$/, '') + '_no_bg.png',
+    };
+  } catch (err) {
+    return { ok: false, file, error: err.message || 'Network error' };
+  }
+}
+
+// ── pending cards ──────────────────────────────────────────────────────
+function renderPendingCard(file, id) {
+  const card = document.createElement('div');
+  card.className = 'card'; card.id = 'card-' + id;
+  card.innerHTML = `
+    <div class="card-head">
+      <span class="fname" title="${esc(file.name)}">${esc(file.name)}</span>
+      <span class="tag spin-tag"><span class="tag-spin"></span> Processing</span>
+    </div>
+    <div class="pending-body">
+      <div class="pend-spin"></div>
+      <div class="pend-info">
+        <div class="pend-status" id="ps-${id}">Uploading…</div>
+        <div class="pend-timer">Elapsed: <b id="pt-${id}">0.0s</b></div>
+      </div>
+    </div>`;
+  $('results').appendChild(card);
+}
+
+function setPendingStatus(id, txt) {
+  const el = $('ps-' + id);
+  if (el) el.textContent = txt;
+}
+
+// Replace pending card with result card (or error card) in-place
+function replaceCard(id, res) {
+  const card = $('card-' + id);
+  if (!card) return;
+
+  if (!res.ok) {
+    card.outerHTML = `<div class="err-card" style="animation:fadeUp .3s ease">
+      <strong>❌ ${esc(res.file.name)}</strong><br>${esc(res.error)}
+    </div>`;
+    return;
+  }
+
+  card.innerHTML = buildResultHTML(res, id);
+  setupCmp(id);
+}
+
+function buildResultHTML(res, id) {
+  return `
+    <div class="card-head">
+      <span class="fname" title="${esc(res.name)}">${esc(res.name)}</span>
+      <span class="tag ok">✓ Done</span>
+      <span class="tag dim">${esc(res.model)}</span>
+    </div>
+    <div class="cmp-labels">
+      <span>← Original</span>
+      <span style="color:#94a3b8;font-size:.67rem">⇔ drag to compare</span>
+      <span>Result →</span>
+    </div>
+    <div class="cmp-wrap" id="wrap-${id}">
+      <img class="orig" src="${res.origUrl}" alt="original" draggable="false">
+      <img class="res"  id="res-${id}" src="${res.blobUrl}" alt="result" draggable="false">
+      <div class="cmp-line"   id="line-${id}"></div>
+      <div class="cmp-handle" id="hdl-${id}">⇔</div>
+      <div class="cmp-target" id="tgt-${id}"></div>
+    </div>
+
+    <div class="result-view">
+      <div>
+        <div class="result-half-label">Transparent result</div>
+        <div class="result-half">
+          <img src="${res.blobUrl}" alt="result transparent">
+        </div>
+      </div>
+      <div>
+        <div class="result-half-label">Original</div>
+        <div class="result-half" style="background:var(--surf2)">
+          <img src="${res.origUrl}" alt="original">
+        </div>
+      </div>
+    </div>
+
+    <div class="card-foot">
+      <div class="stats">
+        <span class="stat">📐 <b>${esc(res.w)}×${esc(res.h)}</b> px</span>
+        <span class="stat">⏱ <b>${esc(res.ms)}s</b></span>
+      </div>
+      <button class="btn-dl" onclick="dlFile('${res.blobUrl}','${esc(res.name)}')">
+        ⬇ Download PNG
+      </button>
+    </div>`;
+}
+
+// ── comparison slider ──────────────────────────────────────────────────
+/*
+  FIX: clip-path uses inset(0 0 0 X%) — clips X% from the LEFT.
+  This means:
+    - At pct=50 → inset(0 0 0 50%) → original shows on LEFT, result on RIGHT ✓
+    - Drag right (pct→100) → more result revealed on the right ✓
+    - Drag left  (pct→0)   → result hidden, only original visible ✓
+*/
+function setupCmp(id) {
+  const wrap   = $('wrap-' + id);
+  const resImg = $('res-'  + id);
+  const line   = $('line-' + id);
+  const handle = $('hdl-'  + id);
+  const target = $('tgt-'  + id);
+  if (!wrap) return;
+
+  let drag = false;
+
+  function setPct(pct) {
+    pct = Math.max(2, Math.min(98, pct));
+    // inset(top right bottom left): clip left side by (100-pct)%
+    // → result visible on the RIGHT from pct% onward
+    resImg.style.clipPath = `inset(0 0 0 ${100 - pct}%)`;
+    line.style.left   = pct + '%';
+    handle.style.left = pct + '%';
+  }
+
+  function move(clientX) {
+    const r = wrap.getBoundingClientRect();
+    setPct(((clientX - r.left) / r.width) * 100);
+  }
+
+  target.addEventListener('mousedown',  e => { drag = true; move(e.clientX); e.preventDefault(); });
+  target.addEventListener('touchstart', e => { drag = true; move(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('mousemove',  e => { if (drag) move(e.clientX); });
+  window.addEventListener('touchmove',  e => { if (drag) move(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('mouseup',    () => { drag = false; });
+  window.addEventListener('touchend',   () => { drag = false; });
+}
+
+// ── download ───────────────────────────────────────────────────────────
+function dlFile(url, name) {
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+}
+</script>
+</body>
+</html>
